@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Clapperboard, Truck, Scale, KeyRound, Users, Receipt,
   CalendarClock, TrendingUp, Menu, X, ExternalLink, LogOut,
-  type LucideIcon,
-} from 'lucide-react';
+  type LucideIcon, ShoppingCart,} from 'lucide-react';
 import { site } from '@/config/site';
 import { BrandMark } from '@/components/ui/BrandMark';
 import { cn } from '@/lib/utils';
@@ -28,6 +27,7 @@ const grupos: { titulo: string; items: NavItem[] }[] = [
   {
     titulo: 'Operación',
     items: [
+      { href: '/admin/vender', label: 'Nueva venta', icon: ShoppingCart },
       { href: '/admin/vencimientos', label: 'Vencimientos', icon: CalendarClock },
       { href: '/admin/cuentas', label: 'Cuentas', icon: KeyRound },
       { href: '/admin/ventas', label: 'Ventas', icon: Receipt },

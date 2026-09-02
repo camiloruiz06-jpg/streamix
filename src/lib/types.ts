@@ -111,6 +111,7 @@ export interface Account {
   costo_adquisicion: number;
   precio_venta: number;
   ganancia: number;
+  plazas_totales: number;
   estado: AccountStatus;
   notas: string | null;
   created_at: string;
@@ -236,4 +237,86 @@ export interface ProviderFinanceRow {
   ventas: number;
   invertido: number;
   ganancia: number;
+}
+
+/* --------------------------------------------------------------------------
+ * Plazas y suscripciones
+ * ------------------------------------------------------------------------ */
+
+export type SubscriptionStatus = 'activa' | 'por_vencer' | 'vencida' | 'pausada' | 'cancelada';
+
+/** Una cuenta del inventario vista como "cuántas plazas tiene y cuántas quedan". */
+export interface AccountSlotRow {
+  account_id: string;
+  service_id: string;
+  plan_id: string | null;
+  provider_id: string | null;
+  servicio: string | null;
+  servicio_color: string | null;
+  plan: string | null;
+  duracion_dias: number | null;
+  proveedor: string | null;
+  credencial_usuario: string | null;
+  fecha_adquisicion: string;
+  fecha_vencimiento: string | null;
+  costo_adquisicion: number;
+  plazas_totales: number;
+  plazas_ocupadas: number;
+  plazas_libres: number;
+  estado: AccountStatus;
+  notas: string | null;
+  dias_cuenta: number | null;
+  costo_por_plaza: number;
+}
+
+/** Los días a los que un cliente tiene derecho, con la cuenta que ocupa hoy. */
+export interface SubscriptionRow {
+  subscription_id: string;
+  customer_id: string;
+  cliente: string | null;
+  cliente_whatsapp: string | null;
+  service_id: string;
+  servicio: string | null;
+  servicio_color: string | null;
+  plan_id: string | null;
+  plan: string | null;
+  duracion_dias: number | null;
+  account_id: string | null;
+  credencial_usuario: string | null;
+  perfil: string | null;
+  pin: string | null;
+  provider_id: string | null;
+  proveedor: string | null;
+  fecha_inicio: string;
+  fecha_fin: string;
+  cuenta_vence: string | null;
+  precio: number;
+  costo_adquisicion: number | null;
+  estado: SubscriptionStatus;
+  dias_restantes: number | null;
+  dias_cuenta: number | null;
+  /** La cuenta se vence antes de que se acaben los días del cliente. */
+  necesita_reemplazo: boolean;
+  semaforo: Semaforo | 'sin_cuenta';
+}
+
+/** De qué proveedor conviene comprar, ordenado del más barato al más caro. */
+export interface ProviderOptionRow {
+  price_id: string;
+  service_id: string;
+  servicio: string | null;
+  plan_id: string | null;
+  plan: string | null;
+  provider_id: string;
+  proveedor: string;
+  proveedor_whatsapp: string | null;
+  proveedor_estado: ProviderStatus;
+  etiqueta: string | null;
+  costo: number;
+  duracion_dias: number | null;
+  condiciones: string | null;
+  /** costo + $1.000 */
+  precio_sugerido: number;
+  /** 1 = el más barato para ese servicio y plan */
+  puesto: number;
 }

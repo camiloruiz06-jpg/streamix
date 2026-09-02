@@ -7,9 +7,9 @@
 import { createClient, supabaseConfigured } from '@/lib/supabase/server';
 import * as demo from '@/lib/demo-data';
 import type {
-  Account, CatalogItem, Category, Customer, DashboardStats, ExpirationRow,
-  MonthlyFinanceRow, Provider, ProviderComparisonRow, ProviderFinanceRow,
-  Sale, Service, ServiceFinanceRow,
+  Account, AccountSlotRow, CatalogItem, Category, Customer, DashboardStats, ExpirationRow,
+  MonthlyFinanceRow, Provider, ProviderComparisonRow, ProviderFinanceRow, ProviderOptionRow,
+  Sale, Service, ServiceFinanceRow, SubscriptionRow,
 } from '@/lib/types';
 
 export const isDemo = () => !supabaseConfigured();
@@ -84,15 +84,28 @@ export async function getFinanceByProvider(): Promise<ProviderFinanceRow[]> {
   return (data as ProviderFinanceRow[]) ?? [];
 }
 
+/**
+ * Vencimientos: ahora salen de las SUSCRIPCIONES (los días del cliente), no de
+ * la cuenta. Se devuelven con la misma forma de siempre para no romper nada.
+ */
 export async function getExpirations(limit?: number): Promise<ExpirationRow[]> {
-  if (isDemo()) return limit ? demo.demoExpirations.slice(0, limit) : demo.demoExpirations;
-  const supabase = await createClient();
-  let query = supabase
-    .from('v_expirations').select('*')
-    .order('fecha_vencimiento', { ascending: true, nullsFirst: false });
-  if (limit) query = query.limit(limit);
-  const { data } = await query;
-  return (data as ExpirationRow[]) ?? [];
+  const subs = await getSubscriptions(limit);
+  return subs.map((s) => ({
+    account_id: s.account_id ?? s.subscription_id,
+    fecha_vencimiento: s.fecha_fin,
+    dias_restantes: s.dias_restantes,
+    semaforo: (s.semaforo === 'sin_cuenta' ? 'sin_fecha' : s.semaforo) as ExpirationRow['semaforo'],
+    estado: (s.estado === 'pausada' ? 'suspendida' : s.estado) as ExpirationRow['estado'],
+    customer_id: s.customer_id,
+    cliente: s.cliente,
+    cliente_whatsapp: s.cliente_whatsapp,
+    servicio: s.servicio,
+    servicio_logo: null,
+    plan: s.plan,
+    proveedor: s.proveedor,
+    precio_venta: s.precio,
+    costo_adquisicion: s.costo_adquisicion ?? 0,
+  }));
 }
 
 /* ------------------------------------------------------------------- admin */
@@ -158,17 +171,42 @@ export async function getSales(): Promise<Sale[]> {
 }
 
 /** Compras de un cliente identificado por su WhatsApp (consulta pública). */
-export async function getPurchasesByWhatsapp(whatsapp: string) {
+export async function getPurchasesByWhatsapp(whatsapp: string): Promise<ExpirationRow[]> {
   const limpio = whatsapp.replace(/[^0-9]/g, '');
   if (!limpio) return [];
-  if (isDemo()) {
-    const cliente = demo.demoCustomers.find((c) => c.whatsapp.endsWith(limpio.slice(-10)));
-    if (!cliente) return [];
-    return demo.demoExpirations.filter((e) => e.customer_id === cliente.id);
-  }
+  const todas = await getExpirations();
+  const cola = limpio.slice(-10);
+  return todas.filter((e) => (e.cliente_whatsapp ?? '').replace(/[^0-9]/g, '').endsWith(cola));
+}
+
+/* ------------------------------------------------ plazas y suscripciones */
+
+/** El inventario con sus plazas: cuántas hay, cuántas ocupadas, cuántas libres. */
+export async function getAccountSlots(): Promise<AccountSlotRow[]> {
+  if (isDemo()) return demo.demoSlots;
   const supabase = await createClient();
   const { data } = await supabase
-    .from('v_expirations').select('*')
-    .ilike('cliente_whatsapp', `%${limpio.slice(-10)}`);
-  return (data as ExpirationRow[]) ?? [];
+    .from('v_account_slots').select('*')
+    .order('fecha_vencimiento', { ascending: true, nullsFirst: false });
+  return (data as AccountSlotRow[]) ?? [];
+}
+
+/** Lo que le debes a cada cliente: sus días, su cuenta actual y su semáforo. */
+export async function getSubscriptions(limit?: number): Promise<SubscriptionRow[]> {
+  if (isDemo()) return limit ? demo.demoSubscriptions.slice(0, limit) : demo.demoSubscriptions;
+  const supabase = await createClient();
+  let q = supabase.from('v_subscriptions').select('*').order('fecha_fin', { ascending: true });
+  if (limit) q = q.limit(limit);
+  const { data } = await q;
+  return (data as SubscriptionRow[]) ?? [];
+}
+
+/** De qué proveedor comprar cada servicio, el más barato de primero. */
+export async function getProviderOptions(): Promise<ProviderOptionRow[]> {
+  if (isDemo()) return demo.demoProviderOptions;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('v_provider_options').select('*')
+    .order('service_id').order('puesto');
+  return (data as ProviderOptionRow[]) ?? [];
 }

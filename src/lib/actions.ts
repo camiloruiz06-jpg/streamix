@@ -33,9 +33,9 @@ const TABLAS = {
       'service_id', 'plan_id', 'provider_id', 'customer_id',
       'credencial_usuario', 'perfil', 'pin', 'info_entrega',
       'fecha_adquisicion', 'fecha_activacion', 'fecha_vencimiento',
-      'costo_adquisicion', 'precio_venta', 'estado', 'notas',
+      'costo_adquisicion', 'precio_venta', 'plazas_totales', 'estado', 'notas',
     ],
-    numericas: ['costo_adquisicion', 'precio_venta'],
+    numericas: ['costo_adquisicion', 'precio_venta', 'plazas_totales'],
   },
   sales: {
     etiqueta: 'venta',
@@ -44,6 +44,14 @@ const TABLAS = {
       'precio', 'costo', 'fecha', 'metodo_pago', 'estado', 'notas',
     ],
     numericas: ['precio', 'costo'],
+  },
+  subscriptions: {
+    etiqueta: 'servicio del cliente',
+    columnas: [
+      'customer_id', 'service_id', 'plan_id', 'account_id', 'perfil', 'pin',
+      'fecha_inicio', 'fecha_fin', 'precio', 'estado', 'notas',
+    ],
+    numericas: ['precio'],
   },
   services: {
     etiqueta: 'servicio',
@@ -114,7 +122,7 @@ function limpiar(tabla: Tabla, form: FormData) {
 
 const RUTAS = [
   '/admin', '/admin/clientes', '/admin/cuentas', '/admin/ventas',
-  '/admin/vencimientos', '/admin/servicios', '/admin/proveedores',
+  '/admin/vencimientos', '/admin/servicios', '/admin/proveedores', '/admin/vender',
   '/admin/comparador', '/admin/finanzas', '/servicios', '/',
 ];
 
@@ -213,7 +221,7 @@ export async function actualizarVencimientos(): Promise<EstadoAccion> {
   const { data: sesion } = await supabase.auth.getUser();
   if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
 
-  const { data, error } = await supabase.rpc('refresh_account_statuses');
+  const { data, error } = await supabase.rpc('refresh_subscription_statuses');
   if (error) return { error: error.message };
 
   refrescar();
@@ -301,4 +309,217 @@ export async function venderCuenta(
 
   refrescar();
   return { ok: true, mensaje: `Venta registrada. La cuenta vence el ${vence}.` };
+}
+
+/* ==========================================================================
+ * EL FLUJO DE VENTA
+ * --------------------------------------------------------------------------
+ * Llega alguien por WhatsApp pidiendo un servicio. Hay dos caminos:
+ *   a) Ya tienes una cuenta con plaza libre  → la usas y no gastas nada.
+ *   b) No tienes                             → le compras al proveedor más
+ *      barato, registras la cuenta y en el mismo paso se la entregas.
+ * En ambos casos queda la SUSCRIPCIÓN del cliente (sus días) y la VENTA.
+ * ======================================================================== */
+
+const num = (v: FormDataEntryValue | null, porDefecto = 0) => {
+  const n = Number(String(v ?? '').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(n) ? n : porDefecto;
+};
+const txt = (v: FormDataEntryValue | null) => {
+  const t = typeof v === 'string' ? v.trim() : '';
+  return t === '' ? null : t;
+};
+const sumarDias = (dias: number, desde?: string | null) => {
+  const d = desde ? new Date(`${desde}T00:00:00`) : new Date();
+  d.setDate(d.getDate() + dias);
+  return d.toISOString().slice(0, 10);
+};
+
+export async function registrarVenta(
+  _estado: EstadoAccion,
+  form: FormData,
+): Promise<EstadoAccion> {
+  if (!supabaseConfigured()) return { error: 'La base de datos no está conectada.' };
+
+  const supabase = await createClient();
+  const { data: sesion } = await supabase.auth.getUser();
+  if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
+
+  const customerId = txt(form.get('customer_id'));
+  const serviceId = txt(form.get('service_id'));
+  const planId = txt(form.get('plan_id'));
+  const modo = (txt(form.get('modo')) ?? 'existente') as 'existente' | 'nueva';
+  const dias = Math.max(1, num(form.get('dias'), 30));
+  const precio = num(form.get('precio'));
+  const metodo = txt(form.get('metodo_pago')) ?? 'llaves';
+  const perfil = txt(form.get('perfil'));
+  const notas = txt(form.get('notas'));
+
+  if (!customerId) return { error: 'Elige el cliente.' };
+  if (!serviceId) return { error: 'Elige el servicio.' };
+  if (precio <= 0) return { error: 'Escribe el precio que te pagó el cliente.' };
+
+  let accountId = txt(form.get('account_id'));
+  let costo = 0;
+  let providerId: string | null = null;
+
+  if (modo === 'nueva') {
+    // Compraste una cuenta nueva: la registramos antes de entregarla.
+    providerId = txt(form.get('provider_id'));
+    costo = num(form.get('costo'));
+    const plazas = Math.max(1, num(form.get('plazas_totales'), 1));
+    const venceCuenta = txt(form.get('cuenta_vence')) ?? sumarDias(dias);
+
+    const { data: nueva, error: eNueva } = await supabase
+      .from('accounts')
+      .insert({
+        service_id: serviceId,
+        plan_id: planId,
+        provider_id: providerId,
+        credencial_usuario: txt(form.get('credencial_usuario')),
+        credencial_secreto: txt(form.get('credencial_secreto')),
+        perfil,
+        pin: txt(form.get('pin')),
+        fecha_adquisicion: new Date().toISOString().slice(0, 10),
+        fecha_vencimiento: venceCuenta,
+        costo_adquisicion: costo,
+        precio_venta: precio,
+        plazas_totales: plazas,
+        estado: 'activa',
+      })
+      .select('id')
+      .single();
+
+    if (eNueva || !nueva) {
+      return { error: `No se pudo registrar la cuenta nueva: ${eNueva?.message ?? ''}` };
+    }
+    accountId = nueva.id;
+  } else {
+    if (!accountId) return { error: 'Elige la cuenta que vas a usar, o registra una nueva.' };
+
+    const { data: libre } = await supabase.rpc('plazas_libres', { p_account: accountId });
+    if (typeof libre === 'number' && libre < 1) {
+      return { error: 'Esa cuenta ya no tiene plazas libres. Elige otra o compra una nueva.' };
+    }
+
+    const { data: cta } = await supabase
+      .from('accounts')
+      .select('costo_adquisicion, provider_id, plazas_totales')
+      .eq('id', accountId)
+      .single();
+    // El costo que le imputamos a esta venta es la parte que le toca de la cuenta.
+    costo = cta ? Number(cta.costo_adquisicion) / Math.max(1, Number(cta.plazas_totales)) : 0;
+    providerId = cta?.provider_id ?? null;
+
+    await supabase.from('accounts').update({ estado: 'activa' }).eq('id', accountId);
+  }
+
+  const { data: sub, error: eSub } = await supabase
+    .from('subscriptions')
+    .insert({
+      customer_id: customerId,
+      service_id: serviceId,
+      plan_id: planId,
+      account_id: accountId,
+      perfil,
+      pin: txt(form.get('pin')),
+      fecha_inicio: new Date().toISOString().slice(0, 10),
+      fecha_fin: sumarDias(dias),
+      precio,
+      estado: 'activa',
+      notas,
+    })
+    .select('id')
+    .single();
+
+  if (eSub || !sub) return { error: `No se pudo registrar la suscripción: ${eSub?.message ?? ''}` };
+
+  const { error: eVenta } = await supabase.from('sales').insert({
+    customer_id: customerId,
+    account_id: accountId,
+    service_id: serviceId,
+    plan_id: planId,
+    provider_id: providerId,
+    subscription_id: sub.id,
+    precio,
+    costo: Math.round(costo),
+    metodo_pago: metodo,
+    estado: 'entregada',
+    notas,
+  });
+
+  if (eVenta) {
+    return { error: `La entrega quedó registrada, pero la venta no: ${eVenta.message}` };
+  }
+
+  refrescar();
+  return {
+    ok: true,
+    mensaje:
+      modo === 'nueva'
+        ? `Cuenta nueva registrada y entregada. Vence el ${sumarDias(dias)}.`
+        : `Entregado en una cuenta que ya tenías. Vence el ${sumarDias(dias)}.`,
+  };
+}
+
+/** Renueva sumando días encima de los que le queden al cliente. */
+export async function renovarSuscripcion(
+  _estado: EstadoAccion,
+  form: FormData,
+): Promise<EstadoAccion> {
+  if (!supabaseConfigured()) return { error: 'La base de datos no está conectada.' };
+  const supabase = await createClient();
+  const { data: sesion } = await supabase.auth.getUser();
+  if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
+
+  const id = txt(form.get('subscription_id'));
+  const dias = Math.max(1, num(form.get('dias'), 30));
+  const precio = num(form.get('precio'));
+  const metodo = txt(form.get('metodo_pago')) ?? 'llaves';
+  const cuenta = txt(form.get('account_id'));
+
+  if (!id) return { error: 'Falta la suscripción a renovar.' };
+  if (precio <= 0) return { error: 'Escribe cuánto te pagó por la renovación.' };
+
+  const { data, error } = await supabase.rpc('renovar_suscripcion', {
+    p_subscription: id,
+    p_dias: dias,
+    p_account: cuenta,
+    p_precio: precio,
+    p_metodo: metodo,
+  });
+
+  if (error) return { error: error.message };
+  refrescar();
+  const fila = Array.isArray(data) ? data[0] : data;
+  return { ok: true, mensaje: `Renovado. Ahora vence el ${fila?.fecha_fin ?? '—'}.` };
+}
+
+/**
+ * Pasa al cliente a otra cuenta conservando sus días.
+ * Es lo que usas cuando la cuenta se te vence antes que el derecho del cliente.
+ */
+export async function moverSuscripcion(
+  _estado: EstadoAccion,
+  form: FormData,
+): Promise<EstadoAccion> {
+  if (!supabaseConfigured()) return { error: 'La base de datos no está conectada.' };
+  const supabase = await createClient();
+  const { data: sesion } = await supabase.auth.getUser();
+  if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
+
+  const id = txt(form.get('subscription_id'));
+  const cuenta = txt(form.get('account_id'));
+  if (!id) return { error: 'Falta la suscripción.' };
+  if (!cuenta) return { error: 'Elige la cuenta a la que lo vas a pasar.' };
+
+  const { error } = await supabase.rpc('mover_suscripcion', {
+    p_subscription: id,
+    p_account: cuenta,
+    p_perfil: txt(form.get('perfil')),
+  });
+
+  if (error) return { error: error.message };
+  refrescar();
+  return { ok: true, mensaje: 'Listo, quedó en la cuenta nueva con los mismos días.' };
 }

@@ -17,6 +17,7 @@ import type {
   Account, CatalogItem, Category, Customer, DashboardStats, ExpirationRow,
   MonthlyFinanceRow, Provider, ProviderComparisonRow, ProviderFinanceRow,
   Sale, Service, ServiceFinanceRow, ServicePlan, Semaforo,
+  AccountSlotRow, SubscriptionRow, ProviderOptionRow,
 } from '@/lib/types';
 
 const hoy = () => {
@@ -226,6 +227,7 @@ export const demoAccounts: Account[] = acctSeed.map(
       costo_adquisicion: costo,
       precio_venta: p.precio_venta,
       ganancia: p.precio_venta - costo,
+      plazas_totales: slug.startsWith('combo-') ? 1 : slug === 'spotify' ? 6 : 5,
       estado: disponible ? 'disponible' : vencido ? 'vencida' : porVencer ? 'por_vencer' : 'activa',
       notas: null,
       created_at: t(adq),
@@ -395,3 +397,110 @@ export const demoByProvider: ProviderFinanceRow[] = demoProviders
     };
   })
   .sort((a, b) => b.ganancia - a.ganancia);
+
+/* -------------------------------------------- plazas y suscripciones (demo) */
+
+export const demoSlots: AccountSlotRow[] = demoAccounts.map((a) => {
+  const totales = a.plazas_totales;
+  const ocupadas = a.customer_id ? 1 : 0;
+  const dias = a.fecha_vencimiento
+    ? Math.round((new Date(a.fecha_vencimiento).getTime() - hoy().getTime()) / 86_400_000)
+    : null;
+  return {
+    account_id: a.id,
+    service_id: a.service_id,
+    plan_id: a.plan_id,
+    provider_id: a.provider_id,
+    servicio: a.services?.nombre ?? null,
+    servicio_color: a.services?.color ?? null,
+    plan: a.service_plans?.nombre ?? null,
+    duracion_dias: a.service_plans?.duracion_dias ?? null,
+    proveedor: a.providers?.nombre ?? null,
+    credencial_usuario: a.credencial_usuario,
+    fecha_adquisicion: a.fecha_adquisicion,
+    fecha_vencimiento: a.fecha_vencimiento,
+    costo_adquisicion: a.costo_adquisicion,
+    plazas_totales: totales,
+    plazas_ocupadas: ocupadas,
+    plazas_libres: totales - ocupadas,
+    estado: a.estado,
+    notas: a.notas,
+    dias_cuenta: dias,
+    costo_por_plaza: Math.round(a.costo_adquisicion / totales),
+  };
+});
+
+export const demoSubscriptions: SubscriptionRow[] = demoAccounts
+  .filter((a) => a.customer_id)
+  .map((a) => {
+    const dias = a.fecha_vencimiento
+      ? Math.round((new Date(a.fecha_vencimiento).getTime() - hoy().getTime()) / 86_400_000)
+      : null;
+    let semaforo: Semaforo = 'sin_fecha';
+    if (dias !== null) {
+      if (dias < 0) semaforo = 'vencido';
+      else if (dias === 0) semaforo = 'hoy';
+      else if (dias <= 3) semaforo = 'critico';
+      else if (dias <= 7) semaforo = 'proximo';
+      else semaforo = 'ok';
+    }
+    return {
+      subscription_id: `sub-${a.id}`,
+      customer_id: a.customer_id as string,
+      cliente: a.customers?.nombre ?? null,
+      cliente_whatsapp: a.customers?.whatsapp ?? null,
+      service_id: a.service_id,
+      servicio: a.services?.nombre ?? null,
+      servicio_color: a.services?.color ?? null,
+      plan_id: a.plan_id,
+      plan: a.service_plans?.nombre ?? null,
+      duracion_dias: a.service_plans?.duracion_dias ?? null,
+      account_id: a.id,
+      credencial_usuario: a.credencial_usuario,
+      perfil: a.perfil,
+      pin: a.pin,
+      provider_id: a.provider_id,
+      proveedor: a.providers?.nombre ?? null,
+      fecha_inicio: a.fecha_adquisicion,
+      fecha_fin: a.fecha_vencimiento ?? a.fecha_adquisicion,
+      cuenta_vence: a.fecha_vencimiento,
+      precio: a.precio_venta,
+      costo_adquisicion: a.costo_adquisicion,
+      estado: (dias !== null && dias < 0 ? 'vencida' : dias !== null && dias <= 3 ? 'por_vencer' : 'activa') as SubscriptionRow['estado'],
+      dias_restantes: dias,
+      dias_cuenta: dias,
+      necesita_reemplazo: false,
+      semaforo,
+    };
+  })
+  .sort((x, y) => (x.dias_restantes ?? 9999) - (y.dias_restantes ?? 9999));
+
+export const demoProviderOptions: ProviderOptionRow[] = seedServices.flatMap((sd) => {
+  const servicio = demoServices.find((x) => x.slug === sd.slug)!;
+  return sd.planes.flatMap((pl, idx) => {
+    const plan = (servicio.service_plans ?? [])[idx];
+    if (!plan) return [];
+    return [...pl.costos]
+      .sort((a, b) => a[1] - b[1])
+      .map(([provKey, costo], i) => {
+        const prov = provByKey.get(provKey)!;
+        return {
+          price_id: `po-${sd.slug}-${idx}-${i}`,
+          service_id: servicio.id,
+          servicio: servicio.nombre,
+          plan_id: plan.id,
+          plan: plan.nombre,
+          provider_id: prov.id,
+          proveedor: prov.nombre,
+          proveedor_whatsapp: prov.whatsapp,
+          proveedor_estado: prov.estado,
+          etiqueta: null,
+          costo,
+          duracion_dias: plan.duracion_dias,
+          condiciones: prov.condiciones,
+          precio_sugerido: costo + 1000,
+          puesto: i + 1,
+        } satisfies ProviderOptionRow;
+      });
+  });
+});

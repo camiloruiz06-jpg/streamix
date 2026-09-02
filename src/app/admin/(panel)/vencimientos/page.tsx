@@ -1,9 +1,11 @@
-import { MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { MessageCircle, AlertTriangle, Plus } from 'lucide-react';
 import { PageHeader, Panel, Money } from '@/components/admin/Ui';
 import { BotonActualizarVencimientos } from '@/components/admin/QuickAction';
+import { BotonRenovar, BotonCambiarCuenta } from '@/components/admin/SubAcciones';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
-import { SemaforoBadge, AccountBadge, semaforoMeta } from '@/components/ui/Badge';
-import { getExpirations } from '@/lib/queries';
+import { SemaforoBadge, semaforoMeta } from '@/components/ui/Badge';
+import { getSubscriptions, getAccountSlots } from '@/lib/queries';
 import { formatDateShort } from '@/lib/format';
 import { waRecordatorio } from '@/lib/whatsapp';
 import type { Semaforo } from '@/lib/types';
@@ -14,88 +16,127 @@ export const metadata = { title: 'Vencimientos' };
 const ordenSemaforo: Semaforo[] = ['vencido', 'hoy', 'critico', 'proximo', 'ok', 'sin_fecha'];
 
 export default async function VencimientosPage() {
-  const filas = await getExpirations();
+  const [subs, cuentas] = await Promise.all([getSubscriptions(), getAccountSlots()]);
 
   const resumen = ordenSemaforo.map((s) => ({
     semaforo: s,
-    total: filas.filter((f) => f.semaforo === s).length,
+    total: subs.filter((f) => f.semaforo === s).length,
   }));
 
-  const rows: TableRow[] = filas.map((f) => ({
-    id: f.account_id,
-    tags: { semaforo: f.semaforo, estado: f.estado, servicio: f.servicio ?? '—' },
-    search: [f.cliente, f.servicio, f.plan, f.proveedor, f.cliente_whatsapp]
+  // Lo urgente de verdad: la cuenta se muere antes que el derecho del cliente
+  const porReemplazar = subs.filter((s) => s.necesita_reemplazo && s.estado !== 'vencida');
+
+  const rows: TableRow[] = subs.map((f) => ({
+    id: f.subscription_id,
+    tags: {
+      semaforo: f.semaforo,
+      servicio: f.servicio ?? '—',
+      alerta: f.necesita_reemplazo ? 'si' : 'no',
+    },
+    search: [f.cliente, f.servicio, f.plan, f.proveedor, f.cliente_whatsapp, f.credencial_usuario]
       .filter(Boolean)
       .join(' '),
     sort: [
       f.cliente ?? '',
       f.servicio ?? '',
-      f.fecha_vencimiento ?? '9999-12-31',
       f.dias_restantes ?? 9999,
-      f.proveedor ?? '',
-      f.precio_venta,
+      f.precio,
       '',
     ],
     className:
       f.semaforo === 'vencido' || f.semaforo === 'hoy'
         ? 'bg-rose-500/[0.05]'
-        : f.semaforo === 'critico'
-          ? 'bg-amber-500/[0.04]'
-          : undefined,
+        : f.necesita_reemplazo
+          ? 'bg-amber-500/[0.05]'
+          : f.semaforo === 'critico'
+            ? 'bg-amber-500/[0.04]'
+            : undefined,
     cells: [
       <div key="c" className="min-w-0">
-        <p className="font-medium text-white">{f.cliente ?? '— sin cliente —'}</p>
+        <p className="truncate font-medium text-white">{f.cliente ?? '— sin cliente —'}</p>
         <p className="text-xs text-white/35">{f.cliente_whatsapp ?? ''}</p>
       </div>,
-      <div key="s">
-        <p className="font-medium text-white">{f.servicio}</p>
-        <p className="text-xs text-white/35">{f.plan}</p>
+      <div key="s" className="min-w-0">
+        <p className="truncate font-medium text-white">{f.servicio}</p>
+        <p className="truncate text-xs text-white/35">{f.plan}</p>
       </div>,
-      <span key="f" className="tabular-nums text-white/70">
-        {formatDateShort(f.fecha_vencimiento)}
-      </span>,
-      <div key="d" className="flex items-center gap-2">
-        <SemaforoBadge semaforo={f.semaforo} />
-        {f.dias_restantes !== null && (
-          <span className="text-xs tabular-nums text-white/40">
-            {f.dias_restantes < 0
-              ? `${Math.abs(f.dias_restantes)} d. atrás`
-              : `${f.dias_restantes} d.`}
+      <div key="d">
+        <SemaforoBadge semaforo={f.semaforo === 'sin_cuenta' ? 'sin_fecha' : f.semaforo} />
+        <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-white/40">
+          {formatDateShort(f.fecha_fin)}
+          {f.dias_restantes !== null &&
+            ` · ${f.dias_restantes < 0 ? `${Math.abs(f.dias_restantes)} d. atrás` : `${f.dias_restantes} d.`}`}
+        </p>
+      </div>,
+      <div key="ct" className="min-w-0">
+        <p className="truncate text-xs text-white/55">{f.credencial_usuario ?? '— sin cuenta —'}</p>
+        {f.necesita_reemplazo ? (
+          <span className="mt-0.5 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
+            <AlertTriangle className="h-2.5 w-2.5" /> se vence antes
           </span>
+        ) : (
+          <p className="truncate text-xs text-white/30">
+            {f.proveedor ?? ''}
+            {f.cuenta_vence ? ` · vence ${formatDateShort(f.cuenta_vence)}` : ''}
+          </p>
         )}
       </div>,
-      <span key="p" className="text-white/60">{f.proveedor ?? '—'}</span>,
-      <AccountBadge key="e" estado={f.estado} />,
-      <Money key="v" value={f.precio_venta} />,
-      f.cliente_whatsapp ? (
-        <a
-          key="a"
-          href={waRecordatorio(
-            f.cliente_whatsapp,
-            f.cliente ?? '',
-            f.servicio ?? '',
-            f.dias_restantes ?? 0,
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-whatsapp btn-sm"
-        >
-          <MessageCircle className="h-3.5 w-3.5" /> Recordar
-        </a>
-      ) : (
-        <span key="a" className="text-xs text-white/25">Sin WhatsApp</span>
-      ),
+      <Money key="v" value={f.precio} />,
+      <div key="ac" className="flex justify-end gap-1.5">
+        <BotonRenovar sub={f} cuentas={cuentas} />
+        <BotonCambiarCuenta sub={f} cuentas={cuentas} resaltado={f.necesita_reemplazo} />
+        {f.cliente_whatsapp && (
+          <a
+            href={waRecordatorio(
+              f.cliente_whatsapp,
+              f.cliente ?? '',
+              f.servicio ?? '',
+              f.dias_restantes ?? 0,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Recordarle por WhatsApp"
+            className="btn-whatsapp btn-sm !px-2"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </a>
+        )}
+      </div>,
     ],
   }));
+
+  const nombresServicios = [...new Set(subs.map((s) => s.servicio).filter(Boolean))] as string[];
 
   return (
     <div>
       <PageHeader
-        titulo="Próximos vencimientos"
-        descripcion="Controla qué servicios están por caducar y avisa al cliente antes de perder la renovación."
+        titulo="Vencimientos"
+        descripcion="Los días que le debes a cada cliente. Renueva sumando días, o pásalo a otra cuenta sin que pierda ninguno."
       >
         <BotonActualizarVencimientos />
+        <Link href="/admin/vender" className="btn-primary btn-sm">
+          <Plus className="h-3.5 w-3.5" /> Nueva venta
+        </Link>
       </PageHeader>
+
+      {porReemplazar.length > 0 && (
+        <div className="mb-8 rounded-2xl border border-amber-400/30 bg-amber-500/[0.07] p-5">
+          <p className="mb-1 flex items-center gap-2 font-display font-bold text-amber-200">
+            <AlertTriangle className="h-4 w-4" />
+            {porReemplazar.length}{' '}
+            {porReemplazar.length === 1 ? 'cliente necesita' : 'clientes necesitan'} cambio de cuenta
+          </p>
+          <p className="text-sm leading-relaxed text-amber-100/70">
+            La cuenta que están usando se vence antes de que se les acaben los días que pagaron.
+            Pásalos a otra cuenta con plazas libres y conservan su tiempo:{' '}
+            <span className="text-amber-100">
+              {porReemplazar.slice(0, 4).map((s) => s.cliente).join(', ')}
+              {porReemplazar.length > 4 ? ` y ${porReemplazar.length - 4} más` : ''}
+            </span>
+            .
+          </p>
+        </div>
+      )}
 
       {/* Semáforo */}
       <div className="mb-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -113,11 +154,11 @@ export default async function VencimientosPage() {
 
       <Panel>
         <DataTable
-          headers={['Cliente', 'Servicio', 'Vence', 'Estado del plazo', 'Proveedor', 'Estado', 'Valor', 'Acción']}
+          headers={['Cliente', 'Servicio', 'Vence', 'Cuenta que usa', 'Pagó', 'Acciones']}
           rows={rows}
-          alignRight={[6]}
+          alignRight={[4]}
           defaultSort={{ index: 2, dir: 'asc' }}
-          searchPlaceholder="Buscar por cliente, servicio o proveedor…"
+          searchPlaceholder="Buscar por cliente, servicio, proveedor o correo de la cuenta…"
           filters={[
             {
               key: 'semaforo',
@@ -125,18 +166,21 @@ export default async function VencimientosPage() {
               options: ordenSemaforo.map((s) => ({ value: s, label: semaforoMeta[s].label })),
             },
             {
-              key: 'estado',
-              label: 'Estado',
+              key: 'alerta',
+              label: 'Alerta',
               options: [
-                { value: 'activa', label: 'Activa' },
-                { value: 'vendida', label: 'Vendida' },
-                { value: 'por_vencer', label: 'Por vencer' },
-                { value: 'vencida', label: 'Vencida' },
+                { value: 'si', label: 'Necesita cambio de cuenta' },
+                { value: 'no', label: 'Sin problema' },
               ],
             },
+            {
+              key: 'servicio',
+              label: 'Servicio',
+              options: nombresServicios.map((s) => ({ value: s, label: s })),
+            },
           ]}
-          emptyTitle="Sin vencimientos registrados"
-          emptyText="Cuando asignes cuentas a clientes con fecha de vencimiento aparecerán aquí."
+          emptyTitle="Sin clientes activos"
+          emptyText="Cuando registres una venta aparecerá aquí el plazo de cada cliente."
         />
       </Panel>
     </div>

@@ -120,6 +120,7 @@ export function camposCuenta(
     { name: 'plan_id', label: 'Plan', tipo: 'select', opciones: opts.planes, valor: a?.plan_id, ayuda: 'Define la duración y el precio sugerido' },
     { name: 'provider_id', label: 'Proveedor', tipo: 'select', opciones: opts.proveedores, valor: a?.provider_id },
     { name: 'estado', label: 'Estado', tipo: 'select', requerido: true, opciones: ESTADOS_CUENTA, valor: a?.estado ?? 'disponible' },
+    { name: 'plazas_totales', label: 'Plazas de la cuenta', tipo: 'numero', requerido: true, valor: a?.plazas_totales ?? '', ayuda: 'A cuántos clientes le puedes vender esta misma cuenta' },
     { name: 'costo_adquisicion', label: 'Costo', tipo: 'numero', prefijo: '$', requerido: true, valor: a?.costo_adquisicion ?? '', ayuda: 'Lo que te cobró el proveedor' },
     { name: 'precio_venta', label: 'Precio de venta', tipo: 'numero', prefijo: '$', valor: a?.precio_venta ?? '', ayuda: 'Lo que le cobras al cliente' },
     { name: 'credencial_usuario', label: 'Correo / usuario de la cuenta', valor: a?.credencial_usuario, placeholder: 'cuenta@correo.com' },
