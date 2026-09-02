@@ -12,7 +12,7 @@ Cambia MARGEN abajo y vuelve a ejecutar:  python3 scripts/build-catalog.py
 
 import uuid, json, os
 
-MARGEN = 1000  # pesos que se suman al costo más barato
+MARGEN = 2000  # pesos que se suman al costo más barato
 
 NS = uuid.UUID("6f0d1f6a-0000-4000-8000-000000000000")
 def uid(kind, key):

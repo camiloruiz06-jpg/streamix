@@ -124,7 +124,7 @@ los próximos 7 días. Si quieres automatizarlo, actívalo con `pg_cron` en Supa
 El catálogo ya viene cargado con **32 servicios, 43 planes y 70 precios** de tus
 **4 proveedores**, tomados de las listas que pasaste.
 
-**Regla de precio aplicada:** `precio de venta = costo del proveedor más barato + $1.000`.
+**Regla de precio aplicada:** `precio de venta = costo del proveedor más barato + $2.000`.
 
 | Ejemplo | Costo más barato | Se vende en |
 |---|---|---|

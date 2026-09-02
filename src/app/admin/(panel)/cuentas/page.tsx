@@ -110,7 +110,7 @@ export default async function CuentasPage() {
         <div key="co" className="whitespace-nowrap text-right">
           <p className="font-semibold tabular-nums text-white">{formatMoney(c.costo_adquisicion)}</p>
           <p className="text-xs tabular-nums text-white/35">
-            {formatMoney(Math.round(pl?.costo_por_plaza ?? c.costo_adquisicion))} / plaza
+            ref. {formatMoney(Math.round(pl?.costo_por_plaza ?? c.costo_adquisicion))} / plaza
           </p>
         </div>,
         <AccountBadge key="e" estado={c.estado} />,
@@ -196,9 +196,11 @@ export default async function CuentasPage() {
 
       <p className="mt-6 rounded-2xl border border-white/10 bg-ink-900/40 p-4 text-xs leading-relaxed text-white/40">
         <strong className="text-white/60">Cómo leerlo:</strong> los puntos morados son plazas ocupadas
-        y los huecos son plazas libres. <strong className="text-white/60">Por plaza</strong> es lo que
-        te cuesta cada cliente en esa cuenta: entre más gente le metas, menos te cuesta cada uno.
-        Evita guardar contraseñas en texto plano; mándalas por WhatsApp.
+        y los huecos son plazas libres. El <strong className="text-white/60">costo</strong> es lo que
+        pagaste de verdad por la cuenta, y se descuenta una sola vez, en la primera venta: si te costó
+        $4.000 y la vendes en $7.000, ganas $3.000; las plazas que vendas después ya no te cuestan nada.
+        El «ref. por plaza» es solo una referencia para ponerle precio. Evita guardar contraseñas en
+        texto plano; mándalas por WhatsApp.
       </p>
     </div>
   );

@@ -8,7 +8,7 @@
  *
  *     python3 scripts/build-catalog.py
  *
- * Regla de precio de venta: costo del proveedor más barato + $1.000.
+ * Regla de precio de venta: costo del proveedor más barato + $2.000.
  * ---------------------------------------------------------------------------
  */
 
@@ -73,8 +73,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Series, películas y originales en HD/4K.",
     descripcion: "Acceso a todo el catálogo de Netflix con calidad HD o 4K según el plan. Entrega inmediata, garantía durante toda la vigencia y soporte por WhatsApp.",
     planes: [
-      { id: "764f3db0-bf4a-56dc-8cf1-68889ecc0c28", nombre: "Premium · 1 pantalla", descripcion: "Perfil propio en HD/4K", duracion_dias: 30, pantallas: 1, precio_venta: 13000, orden: 1, costos: [["p1", 14000, 33], ["p2", 14000, 30], ["p3", 13000, 30], ["p4", 12000, 30]] },
-      { id: "71efb27d-3fdc-52ae-a99c-2a13dcd73aa6", nombre: "Cuenta completa", descripcion: "5 perfiles, control total de la cuenta", duracion_dias: 30, pantallas: 5, precio_venta: 38000, orden: 2, costos: [["p4", 37000, 30]] },
+      { id: "764f3db0-bf4a-56dc-8cf1-68889ecc0c28", nombre: "Premium · 1 pantalla", descripcion: "Perfil propio en HD/4K", duracion_dias: 30, pantallas: 1, precio_venta: 14000, orden: 1, costos: [["p1", 14000, 33], ["p2", 14000, 30], ["p3", 13000, 30], ["p4", 12000, 30]] },
+      { id: "71efb27d-3fdc-52ae-a99c-2a13dcd73aa6", nombre: "Cuenta completa", descripcion: "5 perfiles, control total de la cuenta", duracion_dias: 30, pantallas: 5, precio_venta: 39000, orden: 2, costos: [["p4", 37000, 30]] },
     ],
   },
   {
@@ -83,9 +83,9 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Disney, Pixar, Marvel, Star Wars y ESPN.",
     descripcion: "Todo el universo Disney en un solo lugar, incluyendo Star y ESPN en el plan premium.",
     planes: [
-      { id: "5f0fbd1e-a0f2-5d94-be50-d41e2206bf95", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio, catálogo básico", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p3", 6000, 30]] },
-      { id: "b78cb344-aa79-56d8-bd8b-217b487cec06", nombre: "Premium con ESPN · 1 pantalla", descripcion: "Perfil propio con deportes incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 10000, orden: 2, costos: [["p1", 11000, 30], ["p2", 10000, 30], ["p3", 10000, 30], ["p4", 9000, 30]] },
-      { id: "a3132c40-a66c-5004-823e-f973c168f7cc", nombre: "Cuenta completa Premium", descripcion: "7 perfiles, control total", duracion_dias: 30, pantallas: 7, precio_venta: 34000, orden: 3, costos: [["p4", 33000, 30]] },
+      { id: "5f0fbd1e-a0f2-5d94-be50-d41e2206bf95", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio, catálogo básico", duracion_dias: 30, pantallas: 1, precio_venta: 8000, orden: 1, costos: [["p3", 6000, 30]] },
+      { id: "b78cb344-aa79-56d8-bd8b-217b487cec06", nombre: "Premium con ESPN · 1 pantalla", descripcion: "Perfil propio con deportes incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 11000, orden: 2, costos: [["p1", 11000, 30], ["p2", 10000, 30], ["p3", 10000, 30], ["p4", 9000, 30]] },
+      { id: "a3132c40-a66c-5004-823e-f973c168f7cc", nombre: "Cuenta completa Premium", descripcion: "7 perfiles, control total", duracion_dias: 30, pantallas: 7, precio_venta: 35000, orden: 3, costos: [["p4", 33000, 30]] },
     ],
   },
   {
@@ -94,7 +94,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "HBO, DC, Warner y los estrenos del año.",
     descripcion: "El catálogo completo de Max con series originales de HBO, cine de Warner y contenido DC.",
     planes: [
-      { id: "0e724583-fe29-562d-8974-531b983cb503", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio sin anuncios", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p1", 9000, 30], ["p2", 7000, 30], ["p3", 5000, 30], ["p4", 6000, 30]] },
+      { id: "0e724583-fe29-562d-8974-531b983cb503", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio sin anuncios", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p1", 9000, 30], ["p2", 7000, 30], ["p3", 5000, 30], ["p4", 6000, 30]] },
     ],
   },
   {
@@ -103,8 +103,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Cine, series y producciones originales de Amazon.",
     descripcion: "Prime Video con acceso a estrenos, series originales y contenido exclusivo de Amazon.",
     planes: [
-      { id: "6c3818c3-632a-576a-acb8-257372aaa72b", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p1", 9000, 30], ["p2", 7000, 30], ["p3", 5000, 30], ["p4", 6000, 30]] },
-      { id: "94b9ef57-9995-59a2-84e7-707b0b3f4cc6", nombre: "Cuenta completa", descripcion: "Control total de la cuenta", duracion_dias: 30, pantallas: 6, precio_venta: 19000, orden: 2, costos: [["p4", 18000, 30]] },
+      { id: "6c3818c3-632a-576a-acb8-257372aaa72b", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p1", 9000, 30], ["p2", 7000, 30], ["p3", 5000, 30], ["p4", 6000, 30]] },
+      { id: "94b9ef57-9995-59a2-84e7-707b0b3f4cc6", nombre: "Cuenta completa", descripcion: "Control total de la cuenta", duracion_dias: 30, pantallas: 6, precio_venta: 20000, orden: 2, costos: [["p4", 18000, 30]] },
     ],
   },
   {
@@ -113,7 +113,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Cine, series y contenido exclusivo de Paramount.",
     descripcion: "Paramount+ con su catálogo completo de películas y series originales.",
     planes: [
-      { id: "f5d77b06-5613-50cd-9db7-11e9c61b3a03", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p2", 10000, 30], ["p3", 5000, 30], ["p4", 10000, 30]] },
+      { id: "f5d77b06-5613-50cd-9db7-11e9c61b3a03", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p2", 10000, 30], ["p3", 5000, 30], ["p4", 10000, 30]] },
     ],
   },
   {
@@ -122,7 +122,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "El catálogo de anime más grande, con simulcast.",
     descripcion: "Anime sin anuncios, episodios el mismo día de su estreno en Japón y biblioteca completa.",
     planes: [
-      { id: "f5e68862-4d27-5c02-ac2f-babdd070ac99", nombre: "Mega Fan · 1 pantalla", descripcion: "Anime sin anuncios", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p1", 6000, 30], ["p2", 5000, 30], ["p3", 5000, 30], ["p4", 7000, 30]] },
+      { id: "f5e68862-4d27-5c02-ac2f-babdd070ac99", nombre: "Mega Fan · 1 pantalla", descripcion: "Anime sin anuncios", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p1", 6000, 30], ["p2", 5000, 30], ["p3", 5000, 30], ["p4", 7000, 30]] },
     ],
   },
   {
@@ -131,7 +131,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Cine y series en español, novelas y fútbol.",
     descripcion: "Vix Premium con contenido en español, novelas, cine mexicano y deportes.",
     planes: [
-      { id: "34a204ef-4e42-565b-b7f0-98a78070f4fa", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 5000, orden: 1, costos: [["p3", 4000, 30], ["p4", 6000, 30]] },
+      { id: "34a204ef-4e42-565b-b7f0-98a78070f4fa", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p3", 4000, 30], ["p4", 6000, 30]] },
     ],
   },
   {
@@ -140,8 +140,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Tu biblioteca de películas y series en un solo lugar.",
     descripcion: "Plex Premium con acceso a bibliotecas y contenido gratuito con soporte.",
     planes: [
-      { id: "f30b1f6a-5553-5fc7-bc1f-fd267ea4272d", nombre: "Pantalla", descripcion: "Un dispositivo", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p3", 5000, 30], ["p4", 5000, 30]] },
-      { id: "c7557d89-0332-558a-be4c-496d919c9b33", nombre: "Premium · 3 dispositivos", descripcion: "Hasta 3 dispositivos", duracion_dias: 30, pantallas: 3, precio_venta: 16000, orden: 2, costos: [["p4", 15000, 30]] },
+      { id: "f30b1f6a-5553-5fc7-bc1f-fd267ea4272d", nombre: "Pantalla", descripcion: "Un dispositivo", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p3", 5000, 30], ["p4", 5000, 30]] },
+      { id: "c7557d89-0332-558a-be4c-496d919c9b33", nombre: "Premium · 3 dispositivos", descripcion: "Hasta 3 dispositivos", duracion_dias: 30, pantallas: 3, precio_venta: 17000, orden: 2, costos: [["p4", 15000, 30]] },
     ],
   },
   {
@@ -150,8 +150,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Canales en vivo, nacionales e internacionales.",
     descripcion: "Servicio de televisión por internet con canales nacionales, internacionales y deportes.",
     planes: [
-      { id: "de76190a-54b5-51a4-b140-3aba964b20e6", nombre: "Estándar", descripcion: "Canales en vivo", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p3", 5000, 30]] },
-      { id: "e92223c5-9cba-50a8-9682-991a015282a9", nombre: "IPTV + WIN Sports", descripcion: "Incluye WIN Sports+", duracion_dias: 30, pantallas: 1, precio_venta: 11000, orden: 2, costos: [["p4", 10000, 30]] },
+      { id: "de76190a-54b5-51a4-b140-3aba964b20e6", nombre: "Estándar", descripcion: "Canales en vivo", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p3", 5000, 30]] },
+      { id: "e92223c5-9cba-50a8-9682-991a015282a9", nombre: "IPTV + WIN Sports", descripcion: "Incluye WIN Sports+", duracion_dias: 30, pantallas: 1, precio_venta: 12000, orden: 2, costos: [["p4", 10000, 30]] },
     ],
   },
   {
@@ -160,7 +160,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Servidor de streaming privado con gran catálogo.",
     descripcion: "Acceso a un servidor Jellyfin con biblioteca de películas y series.",
     planes: [
-      { id: "7bdabfc8-7fe7-5023-b748-4263091e7f97", nombre: "Acceso mensual", descripcion: "Un usuario", duracion_dias: 30, pantallas: 1, precio_venta: 16000, orden: 1, costos: [["p4", 15000, 30]] },
+      { id: "7bdabfc8-7fe7-5023-b748-4263091e7f97", nombre: "Acceso mensual", descripcion: "Un usuario", duracion_dias: 30, pantallas: 1, precio_venta: 17000, orden: 1, costos: [["p4", 15000, 30]] },
     ],
   },
   {
@@ -169,7 +169,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Doramas coreanos, chinos y japoneses.",
     descripcion: "Rakuten Viki con doramas y series asiáticas subtituladas, sin anuncios.",
     planes: [
-      { id: "fddae8b5-cab4-5f17-803a-e0145ee1571e", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 10000, orden: 1, costos: [["p4", 9000, 30]] },
+      { id: "fddae8b5-cab4-5f17-803a-e0145ee1571e", nombre: "Estándar · 1 pantalla", descripcion: "Perfil propio", duracion_dias: 30, pantallas: 1, precio_venta: 11000, orden: 1, costos: [["p4", 9000, 30]] },
     ],
   },
   {
@@ -178,8 +178,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Canales en vivo y contenido bajo demanda.",
     descripcion: "Plataforma de televisión en línea con canales en vivo y catálogo bajo demanda.",
     planes: [
-      { id: "7d4fc099-a8bd-5a22-8891-236b7d3ffe07", nombre: "Pantalla", descripcion: "Un dispositivo", duracion_dias: 30, pantallas: 1, precio_venta: 11000, orden: 1, costos: [["p4", 10000, 30]] },
-      { id: "d99fc50b-4494-5773-8a81-fa57475760bf", nombre: "Cuenta completa", descripcion: "Varios dispositivos", duracion_dias: 30, pantallas: 4, precio_venta: 19000, orden: 2, costos: [["p4", 18000, 30]] },
+      { id: "7d4fc099-a8bd-5a22-8891-236b7d3ffe07", nombre: "Pantalla", descripcion: "Un dispositivo", duracion_dias: 30, pantallas: 1, precio_venta: 12000, orden: 1, costos: [["p4", 10000, 30]] },
+      { id: "d99fc50b-4494-5773-8a81-fa57475760bf", nombre: "Cuenta completa", descripcion: "Varios dispositivos", duracion_dias: 30, pantallas: 4, precio_venta: 20000, orden: 2, costos: [["p4", 18000, 30]] },
     ],
   },
   {
@@ -188,7 +188,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Canales latinos con WIN Sports incluido.",
     descripcion: "Telelatino con canales en español y WIN Sports+ para el fútbol colombiano.",
     planes: [
-      { id: "7f8e1ad0-246e-5ce4-9436-8701ee4b5535", nombre: "Mensual", descripcion: "Canales latinos + WIN", duracion_dias: 30, pantallas: 1, precio_venta: 16000, orden: 1, costos: [["p4", 15000, 30]] },
+      { id: "7f8e1ad0-246e-5ce4-9436-8701ee4b5535", nombre: "Mensual", descripcion: "Canales latinos + WIN", duracion_dias: 30, pantallas: 1, precio_venta: 17000, orden: 1, costos: [["p4", 15000, 30]] },
     ],
   },
   {
@@ -197,7 +197,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "YouTube sin anuncios, con descargas y música.",
     descripcion: "YouTube Premium: video sin anuncios, reproducción en segundo plano, descargas y YouTube Music.",
     planes: [
-      { id: "82a5887a-bbe9-55b9-a639-c619e46dd80e", nombre: "Premium · 1 mes", descripcion: "Cuenta propia", duracion_dias: 30, pantallas: 1, precio_venta: 8000, orden: 1, costos: [["p3", 7000, 30], ["p4", 10000, 30]] },
+      { id: "82a5887a-bbe9-55b9-a639-c619e46dd80e", nombre: "Premium · 1 mes", descripcion: "Cuenta propia", duracion_dias: 30, pantallas: 1, precio_venta: 9000, orden: 1, costos: [["p3", 7000, 30], ["p4", 10000, 30]] },
     ],
   },
   {
@@ -206,7 +206,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Las dos plataformas más pedidas en un solo pago.",
     descripcion: "Perfil propio en Netflix y en Prime Video por un solo precio. Entrega inmediata y garantía durante toda la vigencia.",
     planes: [
-      { id: "c32317ca-5117-5d74-a714-15a9b02cf175", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 20000, orden: 1, costos: [["p2", 19000, 30]] },
+      { id: "c32317ca-5117-5d74-a714-15a9b02cf175", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 21000, orden: 1, costos: [["p2", 19000, 30]] },
     ],
   },
   {
@@ -215,7 +215,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Netflix y todo el catálogo de HBO juntos.",
     descripcion: "Perfil propio en Netflix y en Max (HBO). Ideal si sigues series de HBO y estrenos de Netflix al mismo tiempo. Entrega inmediata y garantía durante toda la vigencia.",
     planes: [
-      { id: "29f08eb2-4485-55b5-b724-879d77a6c68e", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 17000, orden: 1, costos: [["p2", 19000, 30], ["p4", 16000, 30]] },
+      { id: "29f08eb2-4485-55b5-b724-879d77a6c68e", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 18000, orden: 1, costos: [["p2", 19000, 30], ["p4", 16000, 30]] },
     ],
   },
   {
@@ -224,7 +224,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Tres plataformas, un solo pago.",
     descripcion: "Perfil propio en Netflix, Prime Video y Disney+. El combo más completo para toda la familia.",
     planes: [
-      { id: "367e0489-9e32-5d06-a82d-1916adb3ccc1", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 30000, orden: 1, costos: [["p2", 29000, 30]] },
+      { id: "367e0489-9e32-5d06-a82d-1916adb3ccc1", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 31000, orden: 1, costos: [["p2", 29000, 30]] },
     ],
   },
   {
@@ -233,7 +233,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Cine, series y estrenos sin límite.",
     descripcion: "Perfil propio en Netflix, Prime Video y Max.",
     planes: [
-      { id: "05c78f34-082e-5c8e-bf2d-9049fd1bcbf2", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 27000, orden: 1, costos: [["p2", 26000, 30]] },
+      { id: "05c78f34-082e-5c8e-bf2d-9049fd1bcbf2", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 28000, orden: 1, costos: [["p2", 26000, 30]] },
     ],
   },
   {
@@ -242,7 +242,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Entretenimiento completo: video y música.",
     descripcion: "Perfil propio en Netflix y Prime Video, más Spotify Premium.",
     planes: [
-      { id: "27ff1fb7-56e2-5735-8d1a-586aa73fdf07", nombre: "Combo · 1 pantalla c/u", descripcion: "Video y música incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 28000, orden: 1, costos: [["p2", 27000, 30]] },
+      { id: "27ff1fb7-56e2-5735-8d1a-586aa73fdf07", nombre: "Combo · 1 pantalla c/u", descripcion: "Video y música incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 29000, orden: 1, costos: [["p2", 27000, 30]] },
     ],
   },
   {
@@ -251,7 +251,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Fútbol internacional y eventos en vivo.",
     descripcion: "Paramount+ con el paquete de deportes: DSports, fútbol internacional y eventos en directo.",
     planes: [
-      { id: "c154da2a-b06d-5d55-96c9-a289c4bf4bc5", nombre: "Mensual", descripcion: "Deportes en vivo", duracion_dias: 30, pantallas: 1, precio_venta: 9000, orden: 1, costos: [["p1", 8000, 30], ["p3", 10000, 30]] },
+      { id: "c154da2a-b06d-5d55-96c9-a289c4bf4bc5", nombre: "Mensual", descripcion: "Deportes en vivo", duracion_dias: 30, pantallas: 1, precio_venta: 10000, orden: 1, costos: [["p1", 8000, 30], ["p3", 10000, 30]] },
     ],
   },
   {
@@ -260,7 +260,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Canales premium y deportes en vivo.",
     descripcion: "DIRECTV GO Plan Oro con canales premium y deportes en directo (sin WIN Sports).",
     planes: [
-      { id: "0a766734-0845-538f-99e5-f5088be80981", nombre: "Plan Oro · mensual", descripcion: "Sin WIN Sports", duracion_dias: 30, pantallas: 1, precio_venta: 21000, orden: 1, costos: [["p4", 20000, 30]] },
+      { id: "0a766734-0845-538f-99e5-f5088be80981", nombre: "Plan Oro · mensual", descripcion: "Sin WIN Sports", duracion_dias: 30, pantallas: 1, precio_venta: 22000, orden: 1, costos: [["p4", 20000, 30]] },
     ],
   },
   {
@@ -269,8 +269,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Música y podcasts sin anuncios, con descargas.",
     descripcion: "Spotify Premium: sin anuncios, reproducción sin conexión, calidad alta y saltos ilimitados.",
     planes: [
-      { id: "e6cef54e-9177-565f-a862-5e7882a6474c", nombre: "Premium · 1 mes", descripcion: "Cuenta propia renovable", duracion_dias: 30, pantallas: 1, precio_venta: 9000, orden: 1, costos: [["p1", 9000, 30], ["p2", 8000, 30], ["p3", 8000, 30], ["p4", 11000, 30]] },
-      { id: "ac119ce0-7a53-5611-85f7-8bcd0718b948", nombre: "Premium · 3 meses", descripcion: "Ahorra pagando por trimestre", duracion_dias: 90, pantallas: 1, precio_venta: 23000, orden: 2, costos: [["p4", 22000, 90]] },
+      { id: "e6cef54e-9177-565f-a862-5e7882a6474c", nombre: "Premium · 1 mes", descripcion: "Cuenta propia renovable", duracion_dias: 30, pantallas: 1, precio_venta: 10000, orden: 1, costos: [["p1", 9000, 30], ["p2", 8000, 30], ["p3", 8000, 30], ["p4", 11000, 30]] },
+      { id: "ac119ce0-7a53-5611-85f7-8bcd0718b948", nombre: "Premium · 3 meses", descripcion: "Ahorra pagando por trimestre", duracion_dias: 90, pantallas: 1, precio_venta: 24000, orden: 2, costos: [["p4", 22000, 90]] },
     ],
   },
   {
@@ -279,7 +279,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Millones de canciones sin anuncios.",
     descripcion: "Deezer Premium con música ilimitada, descargas y sin publicidad. Sujeto a disponibilidad.",
     planes: [
-      { id: "b8cd729f-5873-5b8b-8806-2f4d266761d1", nombre: "Premium · 1 mes", descripcion: "Consultar disponibilidad", duracion_dias: 30, pantallas: 1, precio_venta: 4000, orden: 1, costos: [["p3", 3000, 30]] },
+      { id: "b8cd729f-5873-5b8b-8806-2f4d266761d1", nombre: "Premium · 1 mes", descripcion: "Consultar disponibilidad", duracion_dias: 30, pantallas: 1, precio_venta: 5000, orden: 1, costos: [["p3", 3000, 30]] },
     ],
   },
   {
@@ -288,7 +288,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "El modelo más avanzado de OpenAI, sin límites.",
     descripcion: "Acceso a ChatGPT Pro con los modelos más avanzados, respuestas prioritarias y funciones premium.",
     planes: [
-      { id: "3219211d-e7de-516d-92c3-df2a28f5bfeb", nombre: "Business Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 24000, orden: 1, costos: [["p4", 23000, 30]] },
+      { id: "3219211d-e7de-516d-92c3-df2a28f5bfeb", nombre: "Business Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 25000, orden: 1, costos: [["p4", 23000, 30]] },
     ],
   },
   {
@@ -297,7 +297,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "La IA de Google con todas sus funciones.",
     descripcion: "Gemini Pro con acceso a los modelos avanzados de Google, generación de imágenes y más.",
     planes: [
-      { id: "ab665406-9ead-5837-9408-cfe0c9e789df", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 11000, orden: 1, costos: [["p3", 10000, 30], ["p4", 20000, 30]] },
+      { id: "ab665406-9ead-5837-9408-cfe0c9e789df", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 12000, orden: 1, costos: [["p3", 10000, 30], ["p4", 20000, 30]] },
     ],
   },
   {
@@ -306,7 +306,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Buscador con IA y fuentes verificadas.",
     descripcion: "Perplexity Pro: búsquedas ilimitadas con IA, modelos avanzados y respuestas con fuentes.",
     planes: [
-      { id: "72608056-ab6a-5454-bfab-5bbacf24a19f", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 21000, orden: 1, costos: [["p4", 20000, 30]] },
+      { id: "72608056-ab6a-5454-bfab-5bbacf24a19f", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 22000, orden: 1, costos: [["p4", 20000, 30]] },
     ],
   },
   {
@@ -315,9 +315,9 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Diseño profesional con plantillas premium.",
     descripcion: "Canva Pro con millones de recursos, quitar fondos, kit de marca y almacenamiento ampliado.",
     planes: [
-      { id: "4fc06b25-fc03-5f9e-a978-197f8fa8cdef", nombre: "Pro · 1 mes", descripcion: "Correo personal", duracion_dias: 30, pantallas: 1, precio_venta: 6000, orden: 1, costos: [["p3", 5000, 30], ["p4", 6000, 30]] },
-      { id: "2f1401fa-e115-5217-b08e-7275b3583d3c", nombre: "Pro · 6 meses", descripcion: "Correo personal", duracion_dias: 180, pantallas: 1, precio_venta: 26000, orden: 2, costos: [["p4", 25000, 180]] },
-      { id: "9fd6c7f2-5df1-56a2-96fa-2c7993ead4f2", nombre: "Pro · 1 año", descripcion: "Correo personal", duracion_dias: 365, pantallas: 1, precio_venta: 39000, orden: 3, costos: [["p4", 38000, 365]] },
+      { id: "4fc06b25-fc03-5f9e-a978-197f8fa8cdef", nombre: "Pro · 1 mes", descripcion: "Correo personal", duracion_dias: 30, pantallas: 1, precio_venta: 7000, orden: 1, costos: [["p3", 5000, 30], ["p4", 6000, 30]] },
+      { id: "2f1401fa-e115-5217-b08e-7275b3583d3c", nombre: "Pro · 6 meses", descripcion: "Correo personal", duracion_dias: 180, pantallas: 1, precio_venta: 27000, orden: 2, costos: [["p4", 25000, 180]] },
+      { id: "9fd6c7f2-5df1-56a2-96fa-2c7993ead4f2", nombre: "Pro · 1 año", descripcion: "Correo personal", duracion_dias: 365, pantallas: 1, precio_venta: 40000, orden: 3, costos: [["p4", 38000, 365]] },
     ],
   },
   {
@@ -326,7 +326,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Edición de video profesional sin marca de agua.",
     descripcion: "CapCut Pro con efectos premium, exportación en 4K y sin marca de agua.",
     planes: [
-      { id: "20fc4610-81cc-5a1d-97ca-6cbf32799551", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 19000, orden: 1, costos: [["p4", 18000, 30]] },
+      { id: "20fc4610-81cc-5a1d-97ca-6cbf32799551", nombre: "Pro · 1 mes", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 20000, orden: 1, costos: [["p4", 18000, 30]] },
     ],
   },
   {
@@ -335,7 +335,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Cientos de juegos en consola y PC.",
     descripcion: "Xbox Game Pass con acceso a cientos de juegos, estrenos el día de lanzamiento y juego en la nube.",
     planes: [
-      { id: "8d9b3c42-3e69-5fa5-9b63-4be09ae9dff9", nombre: "Mensual", descripcion: "Consola y PC", duracion_dias: 30, pantallas: 1, precio_venta: 46000, orden: 1, costos: [["p4", 45000, 30]] },
+      { id: "8d9b3c42-3e69-5fa5-9b63-4be09ae9dff9", nombre: "Mensual", descripcion: "Consola y PC", duracion_dias: 30, pantallas: 1, precio_venta: 47000, orden: 1, costos: [["p4", 45000, 30]] },
     ],
   },
   {
@@ -344,7 +344,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Catálogo de juegos para PS4 y PS5.",
     descripcion: "PS Plus Deluxe con catálogo de juegos, clásicos y multijugador en línea.",
     planes: [
-      { id: "744c1a4b-b408-5474-bfb6-da70f11acca1", nombre: "Mensual · PS4/PS5", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 77000, orden: 1, costos: [["p4", 76000, 30]] },
+      { id: "744c1a4b-b408-5474-bfb6-da70f11acca1", nombre: "Mensual · PS4/PS5", descripcion: "Cuenta con acceso completo", duracion_dias: 30, pantallas: 1, precio_venta: 78000, orden: 1, costos: [["p4", 76000, 30]] },
     ],
   },
   {
@@ -353,8 +353,8 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Word, Excel, PowerPoint y 1 TB en la nube.",
     descripcion: "Office 365 por un año completo con todas las aplicaciones de escritorio y OneDrive.",
     planes: [
-      { id: "51906623-ea49-5305-80f2-5a696e389f7c", nombre: "1 año · compartida", descripcion: "Licencia compartida", duracion_dias: 365, pantallas: 1, precio_venta: 71000, orden: 1, costos: [["p4", 70000, 365]] },
-      { id: "780afeea-6ce9-52a2-89f0-4136fa11d398", nombre: "1 año · correo personal", descripcion: "Licencia en tu propio correo", duracion_dias: 365, pantallas: 1, precio_venta: 172000, orden: 2, costos: [["p4", 171000, 365]] },
+      { id: "51906623-ea49-5305-80f2-5a696e389f7c", nombre: "1 año · compartida", descripcion: "Licencia compartida", duracion_dias: 365, pantallas: 1, precio_venta: 72000, orden: 1, costos: [["p4", 70000, 365]] },
+      { id: "780afeea-6ce9-52a2-89f0-4136fa11d398", nombre: "1 año · correo personal", descripcion: "Licencia en tu propio correo", duracion_dias: 365, pantallas: 1, precio_venta: 173000, orden: 2, costos: [["p4", 171000, 365]] },
     ],
   },
   {
@@ -363,7 +363,7 @@ export const seedServices: SeedService[] = [
     descripcion_corta: "Protección completa para tus dispositivos.",
     descripcion: "McAfee Antivirus por un año con protección en tiempo real y navegación segura.",
     planes: [
-      { id: "19ebfc86-aa7d-5b89-bf31-7433ffecfd4c", nombre: "1 año", descripcion: "Licencia anual", duracion_dias: 365, pantallas: 1, precio_venta: 68000, orden: 1, costos: [["p4", 67000, 365]] },
+      { id: "19ebfc86-aa7d-5b89-bf31-7433ffecfd4c", nombre: "1 año", descripcion: "Licencia anual", duracion_dias: 365, pantallas: 1, precio_venta: 69000, orden: 1, costos: [["p4", 67000, 365]] },
     ],
   },
 ];

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertCircle, AlertTriangle, Check, Loader2, PackageCheck, ShoppingCart,
-  Sparkles, TrendingDown, Users, Wallet,
+  Sparkles, TrendingDown, UserPlus, Users, Wallet,
 } from 'lucide-react';
 import { registrarVenta, type EstadoAccion } from '@/lib/actions';
 import { formatMoney } from '@/lib/format';
@@ -116,7 +116,7 @@ export function NuevaVenta({
     if (disponibles.length > 0) {
       setModo('existente');
       setAccountId(disponibles[0].account_id);
-      setCosto(disponibles[0].costo_por_plaza);
+      setCosto(0); // la cuenta ya está pagada: esta plaza no cuesta nada nuevo
     } else {
       setModo('nueva');
       const barata = ofertas[0];
@@ -166,16 +166,45 @@ export function NuevaVenta({
                 value={customerId} onChange={(e) => setCustomerId(e.target.value)}
               >
                 <option value="" className="bg-ink-900">— elegir cliente —</option>
+                <option value="nuevo" className="bg-ink-900">➕ Cliente nuevo (lo creo aquí)</option>
                 {clientes.map((c) => (
                   <option key={c.id} value={c.id} className="bg-ink-900">
                     {c.nombre} · {c.whatsapp}
                   </option>
                 ))}
               </select>
-              <p className="mt-1.5 text-xs text-white/35">
-                ¿Es nuevo? Créalo primero en <a href="/admin/clientes" className="text-brand-300 underline">Clientes</a>.
-              </p>
             </div>
+
+            {customerId === 'nuevo' && (
+              <div className="grid gap-4 rounded-xl border border-brand-400/25 bg-brand-500/[0.06] p-4 sm:col-span-2 sm:grid-cols-2">
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-200 sm:col-span-2">
+                  <UserPlus className="h-3.5 w-3.5" /> Datos del cliente nuevo
+                </p>
+                <div>
+                  <label className="label" htmlFor="v-cnombre">
+                    Nombre <span className="text-brand-400">*</span>
+                  </label>
+                  <input id="v-cnombre" name="cliente_nombre" required className="field" placeholder="Juan Pérez" />
+                </div>
+                <div>
+                  <label className="label" htmlFor="v-cwa">
+                    WhatsApp <span className="text-brand-400">*</span>
+                  </label>
+                  <input
+                    id="v-cwa" name="cliente_whatsapp" type="tel" required inputMode="numeric"
+                    className="field" placeholder="573015551122"
+                  />
+                  <p className="mt-1.5 text-xs text-white/35">Con el 57 adelante, sin + ni espacios.</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label" htmlFor="v-cmail">Correo</label>
+                  <input id="v-cmail" name="cliente_email" type="email" className="field" placeholder="opcional" />
+                </div>
+                <p className="text-xs leading-relaxed text-white/40 sm:col-span-2">
+                  Si ese WhatsApp ya está registrado se usa el cliente que existe, no se duplica.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="label" htmlFor="v-servicio">Servicio <span className="text-brand-400">*</span></label>
@@ -237,7 +266,7 @@ export function NuevaVenta({
                         onClick={() => {
                           setModo('existente');
                           setAccountId(c.account_id);
-                          setCosto(c.costo_por_plaza);
+                          setCosto(0);
                         }}
                         className={cn(
                           'flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition',
@@ -257,7 +286,8 @@ export function NuevaVenta({
                             {c.credencial_usuario ?? 'Cuenta sin correo'}
                           </span>
                           <span className="block text-xs text-white/40">
-                            {c.proveedor ?? 'sin proveedor'} · te cuesta {formatMoney(c.costo_por_plaza)} por plaza
+                            {c.proveedor ?? 'sin proveedor'} · ya la pagaste ({formatMoney(c.costo_adquisicion)}),
+                            esta plaza no te cuesta nada extra
                           </span>
                         </span>
                         <span className="shrink-0 text-right">
@@ -423,7 +453,7 @@ export function NuevaVenta({
                     onClick={() => setPrecio(oferta.precio_sugerido)}
                     className="mt-1.5 text-xs text-brand-300 underline"
                   >
-                    Usar el sugerido: {formatMoney(oferta.precio_sugerido)} (costo + $1.000)
+                    Usar el sugerido: {formatMoney(oferta.precio_sugerido)} (costo + $2.000)
                   </button>
                 )}
               </div>
@@ -459,7 +489,9 @@ export function NuevaVenta({
             <div className="flex justify-between gap-3">
               <dt className="text-white/45">Cliente</dt>
               <dd className="truncate text-right text-white/80">
-                {clientes.find((c) => c.id === customerId)?.nombre ?? '—'}
+                {customerId === 'nuevo'
+                  ? 'Cliente nuevo'
+                  : clientes.find((c) => c.id === customerId)?.nombre ?? '—'}
               </dd>
             </div>
             <div className="flex justify-between gap-3">
@@ -501,7 +533,7 @@ export function NuevaVenta({
           {modo === 'existente' && accountId && !noAlcanza && (
             <p className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-3 py-2.5 text-xs leading-relaxed text-emerald-200">
               <Users className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              No gastas nada nuevo: aprovechas una plaza que ya pagaste.
+              Esta plaza ya está pagada, así que los {formatMoney(precio)} son ganancia limpia.
             </p>
           )}
           {noAlcanza && cuentaElegida && (

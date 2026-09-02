@@ -213,7 +213,7 @@ select
   pp.costo,
   pp.duracion_dias,
   pp.condiciones,
-  (pp.costo + 1000)         as precio_sugerido,
+  (pp.costo + 2000)         as precio_sugerido,
   row_number() over (
     partition by pp.service_id, coalesce(pp.plan_id, '00000000-0000-0000-0000-000000000000'::uuid)
     order by pp.costo asc, pr.nombre asc
@@ -289,7 +289,14 @@ begin
   where id = p_subscription
   returning * into fila;
 
-  select costo_adquisicion into nuevo_costo from accounts where id = fila.account_id;
+  -- El costo de la cuenta se carga una sola vez, en su primera venta.
+  -- Una renovación sobre una cuenta ya pagada no vuelve a costar.
+  select case
+           when fila.account_id is null then 0
+           when exists (select 1 from sales where account_id = fila.account_id) then 0
+           else coalesce((select costo_adquisicion from accounts where id = fila.account_id), 0)
+         end
+    into nuevo_costo;
 
   insert into sales (customer_id, account_id, service_id, plan_id, provider_id,
                      subscription_id, precio, costo, metodo_pago, estado, notas)

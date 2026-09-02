@@ -33,9 +33,9 @@ const TABLAS = {
       'service_id', 'plan_id', 'provider_id', 'customer_id',
       'credencial_usuario', 'perfil', 'pin', 'info_entrega',
       'fecha_adquisicion', 'fecha_activacion', 'fecha_vencimiento',
-      'costo_adquisicion', 'precio_venta', 'plazas_totales', 'estado', 'notas',
+      'costo_adquisicion', 'plazas_totales', 'estado', 'notas',
     ],
-    numericas: ['costo_adquisicion', 'precio_venta', 'plazas_totales'],
+    numericas: ['costo_adquisicion', 'plazas_totales'],
   },
   sales: {
     etiqueta: 'venta',
@@ -345,7 +345,7 @@ export async function registrarVenta(
   const { data: sesion } = await supabase.auth.getUser();
   if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
 
-  const customerId = txt(form.get('customer_id'));
+  let customerId = txt(form.get('customer_id'));
   const serviceId = txt(form.get('service_id'));
   const planId = txt(form.get('plan_id'));
   const modo = (txt(form.get('modo')) ?? 'existente') as 'existente' | 'nueva';
@@ -354,6 +354,32 @@ export async function registrarVenta(
   const metodo = txt(form.get('metodo_pago')) ?? 'llaves';
   const perfil = txt(form.get('perfil'));
   const notas = txt(form.get('notas'));
+
+  // Cliente nuevo: se crea aquí mismo, sin salir de la pantalla.
+  if (customerId === 'nuevo') {
+    const nombre = txt(form.get('cliente_nombre'));
+    const whatsapp = (txt(form.get('cliente_whatsapp')) ?? '').replace(/[^0-9]/g, '');
+    if (!nombre) return { error: 'Escribe el nombre del cliente nuevo.' };
+    if (whatsapp.length < 10) return { error: 'El WhatsApp del cliente no parece válido.' };
+
+    // Si ya existe alguien con ese WhatsApp lo reusamos en vez de duplicarlo.
+    const { data: existente } = await supabase
+      .from('customers').select('id').eq('whatsapp', whatsapp).maybeSingle();
+
+    if (existente) {
+      customerId = existente.id;
+    } else {
+      const { data: creado, error: eCliente } = await supabase
+        .from('customers')
+        .insert({ nombre, whatsapp, email: txt(form.get('cliente_email')), estado: 'activo' })
+        .select('id')
+        .single();
+      if (eCliente || !creado) {
+        return { error: `No se pudo crear el cliente: ${eCliente?.message ?? ''}` };
+      }
+      customerId = creado.id;
+    }
+  }
 
   if (!customerId) return { error: 'Elige el cliente.' };
   if (!serviceId) return { error: 'Elige el servicio.' };
@@ -383,7 +409,6 @@ export async function registrarVenta(
         fecha_adquisicion: new Date().toISOString().slice(0, 10),
         fecha_vencimiento: venceCuenta,
         costo_adquisicion: costo,
-        precio_venta: precio,
         plazas_totales: plazas,
         estado: 'activa',
       })
@@ -404,12 +429,21 @@ export async function registrarVenta(
 
     const { data: cta } = await supabase
       .from('accounts')
-      .select('costo_adquisicion, provider_id, plazas_totales')
+      .select('costo_adquisicion, provider_id')
       .eq('id', accountId)
       .single();
-    // El costo que le imputamos a esta venta es la parte que le toca de la cuenta.
-    costo = cta ? Number(cta.costo_adquisicion) / Math.max(1, Number(cta.plazas_totales)) : 0;
     providerId = cta?.provider_id ?? null;
+
+    // El costo de la cuenta se carga UNA sola vez, en la primera venta.
+    // Las siguientes plazas de esa misma cuenta no te cuestan nada: ya la
+    // pagaste. Así "la compré en 4.000 y la vendí en 7.000" da 3.000 de
+    // ganancia, y el total de la cuenta nunca queda inflado.
+    const { count } = await supabase
+      .from('sales')
+      .select('id', { count: 'exact', head: true })
+      .eq('account_id', accountId);
+
+    costo = (count ?? 0) === 0 ? Number(cta?.costo_adquisicion ?? 0) : 0;
 
     await supabase.from('accounts').update({ estado: 'activa' }).eq('id', accountId);
   }

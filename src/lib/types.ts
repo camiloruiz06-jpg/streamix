@@ -315,7 +315,7 @@ export interface ProviderOptionRow {
   costo: number;
   duracion_dias: number | null;
   condiciones: string | null;
-  /** costo + $1.000 */
+  /** costo + $2.000 */
   precio_sugerido: number;
   /** 1 = el más barato para ese servicio y plan */
   puesto: number;
