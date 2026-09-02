@@ -6,7 +6,7 @@ import { getCatalog, getCategories } from '@/lib/queries';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Catálogo de servicios',
+  title: 'Catálogo',
   description:
     'Explora todos los servicios de streaming, música y deportes disponibles. Precios claros, entrega inmediata y garantía.',
 };

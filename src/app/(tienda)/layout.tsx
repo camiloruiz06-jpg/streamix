@@ -10,7 +10,7 @@ export default function TiendaLayout({ children }: { children: React.ReactNode }
     <>
       <BackgroundFx />
       <Navbar />
-      {isDemo() && <DemoBanner />}
+      {isDemo() && process.env.NODE_ENV !== 'production' && <DemoBanner />}
       <main className="min-h-screen">{children}</main>
       <Footer />
       <WhatsAppFab />

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, MessageCircle, ShieldCheck, Zap, Headphones } from 'lucide-react';
 import { site } from '@/config/site';
@@ -71,10 +70,10 @@ export function Hero({ servicios = 8 }: { servicios?: number }) {
             transition={{ duration: 0.8, delay: 0.3, ease }}
             className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <Link href="/servicios" className="btn-primary group w-full sm:w-auto">
-              Ver servicios
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
+            <a href="#catalogo" className="btn-primary group w-full sm:w-auto">
+              Ver catálogo
+              <ArrowRight className="h-4 w-4 rotate-90 transition-transform duration-300 group-hover:translate-y-1" />
+            </a>
             <a
               href={waGeneral()}
               target="_blank"

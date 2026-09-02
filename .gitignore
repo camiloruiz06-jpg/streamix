@@ -11,9 +11,4 @@ npm-debug.log*
 .vercel
 next-env.d.ts
 tsconfig.tsbuildinfo
-
-# Paquetes de entrega y respaldos
-*.zip
-
-# Imágenes originales de los logos (se procesan a public/logos)
-/logos/
+_to_delete/

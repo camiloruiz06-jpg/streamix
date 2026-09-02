@@ -49,8 +49,8 @@ export interface SeedProvider {
 }
 
 export const seedCategories: SeedCategory[] = [
-  { id: "2b4d3d87-f316-56b0-b338-0c3ac87fdf39", slug: "combos", nombre: "Combos", descripcion: "Varias plataformas en un solo pago, al mejor precio.", icono: "layers", color: "#ff2fd0", orden: 1 },
-  { id: "78154892-e853-5231-9714-7e3e4f66c996", slug: "streaming", nombre: "Streaming", descripcion: "Películas y series bajo demanda.", icono: "clapperboard", color: "#a855f7", orden: 2 },
+  { id: "78154892-e853-5231-9714-7e3e4f66c996", slug: "streaming", nombre: "Streaming", descripcion: "Películas y series bajo demanda.", icono: "clapperboard", color: "#a855f7", orden: 1 },
+  { id: "2b4d3d87-f316-56b0-b338-0c3ac87fdf39", slug: "combos", nombre: "Combos", descripcion: "Varias plataformas en un solo pago, al mejor precio.", icono: "layers", color: "#ff2fd0", orden: 2 },
   { id: "5f51673c-cb96-52a4-b79b-00a0780cb033", slug: "deportes", nombre: "Deportes", descripcion: "Fútbol y eventos en vivo.", icono: "trophy", color: "#f97316", orden: 3 },
   { id: "06219c8d-3267-564a-aecb-20c306f17544", slug: "musica", nombre: "Música", descripcion: "Canciones y podcasts sin anuncios.", icono: "music", color: "#22c55e", orden: 4 },
   { id: "9becfded-c275-590c-92aa-96a53d751751", slug: "ia", nombre: "Inteligencia artificial", descripcion: "Las mejores IA con cuenta propia.", icono: "sparkles", color: "#38bdf8", orden: 5 },
@@ -68,53 +68,8 @@ export const seedProviders: SeedProvider[] = [
 
 export const seedServices: SeedService[] = [
   {
-    id: "c42d28a8-be84-5cee-9dca-da85927e93b5", slug: "combo-netflix-prime", nombre: "Netflix + Prime Video", logo_url: "/logos/combo-netflix-prime.png",
-    categoria: "combos", color: "#e50914", destacado: true, orden: 1,
-    descripcion_corta: "Las dos plataformas más pedidas en un solo pago.",
-    descripcion: "Perfil propio en Netflix y en Prime Video por un solo precio. Entrega inmediata y garantía durante toda la vigencia.",
-    planes: [
-      { id: "c32317ca-5117-5d74-a714-15a9b02cf175", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 20000, orden: 1, costos: [["p2", 19000, 30]] },
-    ],
-  },
-  {
-    id: "59426ef0-7dfd-5781-bbab-5c6b9d5eb592", slug: "combo-netflix-max", nombre: "Netflix + Max", logo_url: "/logos/combo-netflix-max.png",
-    categoria: "combos", color: "#7c3aed", destacado: true, orden: 2,
-    descripcion_corta: "Netflix y todo el catálogo de HBO juntos.",
-    descripcion: "Perfil propio en Netflix y en Max (HBO). Ideal si sigues series de HBO y estrenos de Netflix al mismo tiempo. Entrega inmediata y garantía durante toda la vigencia.",
-    planes: [
-      { id: "29f08eb2-4485-55b5-b724-879d77a6c68e", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 17000, orden: 1, costos: [["p2", 19000, 30], ["p4", 16000, 30]] },
-    ],
-  },
-  {
-    id: "9168d390-f53d-5c69-b08b-29fba73c62e0", slug: "combo-netflix-prime-disney", nombre: "Netflix + Prime + Disney+", logo_url: "/logos/combo-netflix-prime-disney.png",
-    categoria: "combos", color: "#0f2fa5", destacado: true, orden: 3,
-    descripcion_corta: "Tres plataformas, un solo pago.",
-    descripcion: "Perfil propio en Netflix, Prime Video y Disney+. El combo más completo para toda la familia.",
-    planes: [
-      { id: "367e0489-9e32-5d06-a82d-1916adb3ccc1", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 30000, orden: 1, costos: [["p2", 29000, 30]] },
-    ],
-  },
-  {
-    id: "fc726882-9cee-5865-9317-ed11cba1e3a2", slug: "combo-netflix-prime-max", nombre: "Netflix + Prime + Max", logo_url: "/logos/combo-netflix-prime-max.png",
-    categoria: "combos", color: "#6d28d9", destacado: false, orden: 4,
-    descripcion_corta: "Cine, series y estrenos sin límite.",
-    descripcion: "Perfil propio en Netflix, Prime Video y Max.",
-    planes: [
-      { id: "05c78f34-082e-5c8e-bf2d-9049fd1bcbf2", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 27000, orden: 1, costos: [["p2", 26000, 30]] },
-    ],
-  },
-  {
-    id: "b0862a77-83af-5ad7-852e-c2146fc7234b", slug: "combo-netflix-prime-spotify", nombre: "Netflix + Prime + Spotify", logo_url: "/logos/combo-netflix-prime-spotify.png",
-    categoria: "combos", color: "#1db954", destacado: false, orden: 5,
-    descripcion_corta: "Entretenimiento completo: video y música.",
-    descripcion: "Perfil propio en Netflix y Prime Video, más Spotify Premium.",
-    planes: [
-      { id: "27ff1fb7-56e2-5735-8d1a-586aa73fdf07", nombre: "Combo · 1 pantalla c/u", descripcion: "Video y música incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 28000, orden: 1, costos: [["p2", 27000, 30]] },
-    ],
-  },
-  {
     id: "6a2ce6eb-df48-529b-be41-22249bc593eb", slug: "netflix", nombre: "Netflix", logo_url: "/logos/netflix.png",
-    categoria: "streaming", color: "#e50914", destacado: true, orden: 6,
+    categoria: "streaming", color: "#e50914", destacado: true, orden: 1,
     descripcion_corta: "Series, películas y originales en HD/4K.",
     descripcion: "Acceso a todo el catálogo de Netflix con calidad HD o 4K según el plan. Entrega inmediata, garantía durante toda la vigencia y soporte por WhatsApp.",
     planes: [
@@ -124,7 +79,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "165da644-34c2-5724-a1a7-78610dde3be0", slug: "disney-plus", nombre: "Disney+", logo_url: "/logos/disney-plus.png",
-    categoria: "streaming", color: "#0f2fa5", destacado: true, orden: 7,
+    categoria: "streaming", color: "#0f2fa5", destacado: true, orden: 2,
     descripcion_corta: "Disney, Pixar, Marvel, Star Wars y ESPN.",
     descripcion: "Todo el universo Disney en un solo lugar, incluyendo Star y ESPN en el plan premium.",
     planes: [
@@ -135,7 +90,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "32d051b5-b2a5-5713-9bf6-0b12cd23ab80", slug: "max", nombre: "Max (HBO)", logo_url: "/logos/max.png",
-    categoria: "streaming", color: "#7c3aed", destacado: true, orden: 8,
+    categoria: "streaming", color: "#7c3aed", destacado: true, orden: 3,
     descripcion_corta: "HBO, DC, Warner y los estrenos del año.",
     descripcion: "El catálogo completo de Max con series originales de HBO, cine de Warner y contenido DC.",
     planes: [
@@ -144,7 +99,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "b4ef416d-40d2-5ac3-bb36-43502dfb70c4", slug: "prime-video", nombre: "Prime Video", logo_url: "/logos/prime-video.png",
-    categoria: "streaming", color: "#00a8e1", destacado: true, orden: 9,
+    categoria: "streaming", color: "#00a8e1", destacado: true, orden: 4,
     descripcion_corta: "Cine, series y producciones originales de Amazon.",
     descripcion: "Prime Video con acceso a estrenos, series originales y contenido exclusivo de Amazon.",
     planes: [
@@ -154,7 +109,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "70fa438e-807e-54ed-9bd0-47d24c902fca", slug: "paramount-plus", nombre: "Paramount+", logo_url: "/logos/paramount-plus.png",
-    categoria: "streaming", color: "#0064ff", destacado: false, orden: 10,
+    categoria: "streaming", color: "#0064ff", destacado: false, orden: 5,
     descripcion_corta: "Cine, series y contenido exclusivo de Paramount.",
     descripcion: "Paramount+ con su catálogo completo de películas y series originales.",
     planes: [
@@ -163,7 +118,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "cbdf399f-3d42-5c46-b5d2-92a35c4d0cbd", slug: "crunchyroll", nombre: "Crunchyroll", logo_url: "/logos/crunchyroll.png",
-    categoria: "streaming", color: "#f47521", destacado: false, orden: 11,
+    categoria: "streaming", color: "#f47521", destacado: false, orden: 6,
     descripcion_corta: "El catálogo de anime más grande, con simulcast.",
     descripcion: "Anime sin anuncios, episodios el mismo día de su estreno en Japón y biblioteca completa.",
     planes: [
@@ -172,7 +127,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "fd1d6756-633b-568c-8887-c894f766bcd9", slug: "vix", nombre: "Vix", logo_url: "/logos/vix.png",
-    categoria: "streaming", color: "#ff4d4d", destacado: false, orden: 12,
+    categoria: "streaming", color: "#ff4d4d", destacado: false, orden: 7,
     descripcion_corta: "Cine y series en español, novelas y fútbol.",
     descripcion: "Vix Premium con contenido en español, novelas, cine mexicano y deportes.",
     planes: [
@@ -181,7 +136,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "242f5fb3-59db-5707-9efb-ce34f5338e7e", slug: "plex", nombre: "Plex", logo_url: "/logos/plex.png",
-    categoria: "streaming", color: "#e5a00d", destacado: false, orden: 13,
+    categoria: "streaming", color: "#e5a00d", destacado: false, orden: 8,
     descripcion_corta: "Tu biblioteca de películas y series en un solo lugar.",
     descripcion: "Plex Premium con acceso a bibliotecas y contenido gratuito con soporte.",
     planes: [
@@ -191,7 +146,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "5191432a-e8b0-5282-8e96-3b3c4076a61f", slug: "iptv", nombre: "IPTV", logo_url: "/logos/iptv.png",
-    categoria: "streaming", color: "#38bdf8", destacado: false, orden: 14,
+    categoria: "streaming", color: "#38bdf8", destacado: false, orden: 9,
     descripcion_corta: "Canales en vivo, nacionales e internacionales.",
     descripcion: "Servicio de televisión por internet con canales nacionales, internacionales y deportes.",
     planes: [
@@ -201,7 +156,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "af53a9b5-5718-5ef7-9f88-5785be0389b3", slug: "jellyfin", nombre: "Jellyfin", logo_url: "/logos/jellyfin.png",
-    categoria: "streaming", color: "#a855f7", destacado: false, orden: 15,
+    categoria: "streaming", color: "#a855f7", destacado: false, orden: 10,
     descripcion_corta: "Servidor de streaming privado con gran catálogo.",
     descripcion: "Acceso a un servidor Jellyfin con biblioteca de películas y series.",
     planes: [
@@ -210,7 +165,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "181df90f-bb63-50e7-bec1-ce441063b27b", slug: "viki-rakuten", nombre: "Viki Rakuten", logo_url: "/logos/viki-rakuten.png",
-    categoria: "streaming", color: "#00b0f0", destacado: false, orden: 16,
+    categoria: "streaming", color: "#00b0f0", destacado: false, orden: 11,
     descripcion_corta: "Doramas coreanos, chinos y japoneses.",
     descripcion: "Rakuten Viki con doramas y series asiáticas subtituladas, sin anuncios.",
     planes: [
@@ -219,7 +174,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "261c4478-e59c-5394-9d84-fcc47e8b36d4", slug: "flujo-tv", nombre: "Flujo TV", logo_url: "/logos/flujo-tv.png",
-    categoria: "streaming", color: "#22d3ee", destacado: false, orden: 17,
+    categoria: "streaming", color: "#22d3ee", destacado: false, orden: 12,
     descripcion_corta: "Canales en vivo y contenido bajo demanda.",
     descripcion: "Plataforma de televisión en línea con canales en vivo y catálogo bajo demanda.",
     planes: [
@@ -229,7 +184,7 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "56b8d724-1566-54bc-b97b-c1c75a66e884", slug: "telelatino", nombre: "Telelatino + WIN", logo_url: "/logos/telelatino.png",
-    categoria: "streaming", color: "#f59e0b", destacado: false, orden: 18,
+    categoria: "streaming", color: "#f59e0b", destacado: false, orden: 13,
     descripcion_corta: "Canales latinos con WIN Sports incluido.",
     descripcion: "Telelatino con canales en español y WIN Sports+ para el fútbol colombiano.",
     planes: [
@@ -238,11 +193,56 @@ export const seedServices: SeedService[] = [
   },
   {
     id: "6ed3c7f8-4696-52a8-9e86-bdf4f81c32bf", slug: "youtube-premium", nombre: "YouTube Premium", logo_url: "/logos/youtube-premium.png",
-    categoria: "streaming", color: "#ff0000", destacado: false, orden: 19,
+    categoria: "streaming", color: "#ff0000", destacado: false, orden: 14,
     descripcion_corta: "YouTube sin anuncios, con descargas y música.",
     descripcion: "YouTube Premium: video sin anuncios, reproducción en segundo plano, descargas y YouTube Music.",
     planes: [
       { id: "82a5887a-bbe9-55b9-a639-c619e46dd80e", nombre: "Premium · 1 mes", descripcion: "Cuenta propia", duracion_dias: 30, pantallas: 1, precio_venta: 8000, orden: 1, costos: [["p3", 7000, 30], ["p4", 10000, 30]] },
+    ],
+  },
+  {
+    id: "c42d28a8-be84-5cee-9dca-da85927e93b5", slug: "combo-netflix-prime", nombre: "Netflix + Prime Video", logo_url: "/logos/combo-netflix-prime.png",
+    categoria: "combos", color: "#e50914", destacado: true, orden: 15,
+    descripcion_corta: "Las dos plataformas más pedidas en un solo pago.",
+    descripcion: "Perfil propio en Netflix y en Prime Video por un solo precio. Entrega inmediata y garantía durante toda la vigencia.",
+    planes: [
+      { id: "c32317ca-5117-5d74-a714-15a9b02cf175", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 20000, orden: 1, costos: [["p2", 19000, 30]] },
+    ],
+  },
+  {
+    id: "59426ef0-7dfd-5781-bbab-5c6b9d5eb592", slug: "combo-netflix-max", nombre: "Netflix + Max", logo_url: "/logos/combo-netflix-max.png",
+    categoria: "combos", color: "#7c3aed", destacado: true, orden: 16,
+    descripcion_corta: "Netflix y todo el catálogo de HBO juntos.",
+    descripcion: "Perfil propio en Netflix y en Max (HBO). Ideal si sigues series de HBO y estrenos de Netflix al mismo tiempo. Entrega inmediata y garantía durante toda la vigencia.",
+    planes: [
+      { id: "29f08eb2-4485-55b5-b724-879d77a6c68e", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 17000, orden: 1, costos: [["p2", 19000, 30], ["p4", 16000, 30]] },
+    ],
+  },
+  {
+    id: "9168d390-f53d-5c69-b08b-29fba73c62e0", slug: "combo-netflix-prime-disney", nombre: "Netflix + Prime + Disney+", logo_url: "/logos/combo-netflix-prime-disney.png",
+    categoria: "combos", color: "#0f2fa5", destacado: true, orden: 17,
+    descripcion_corta: "Tres plataformas, un solo pago.",
+    descripcion: "Perfil propio en Netflix, Prime Video y Disney+. El combo más completo para toda la familia.",
+    planes: [
+      { id: "367e0489-9e32-5d06-a82d-1916adb3ccc1", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 30000, orden: 1, costos: [["p2", 29000, 30]] },
+    ],
+  },
+  {
+    id: "fc726882-9cee-5865-9317-ed11cba1e3a2", slug: "combo-netflix-prime-max", nombre: "Netflix + Prime + Max", logo_url: "/logos/combo-netflix-prime-max.png",
+    categoria: "combos", color: "#6d28d9", destacado: false, orden: 18,
+    descripcion_corta: "Cine, series y estrenos sin límite.",
+    descripcion: "Perfil propio en Netflix, Prime Video y Max.",
+    planes: [
+      { id: "05c78f34-082e-5c8e-bf2d-9049fd1bcbf2", nombre: "Combo · 1 pantalla c/u", descripcion: "Un perfil en cada plataforma", duracion_dias: 30, pantallas: 1, precio_venta: 27000, orden: 1, costos: [["p2", 26000, 30]] },
+    ],
+  },
+  {
+    id: "b0862a77-83af-5ad7-852e-c2146fc7234b", slug: "combo-netflix-prime-spotify", nombre: "Netflix + Prime + Spotify", logo_url: "/logos/combo-netflix-prime-spotify.png",
+    categoria: "combos", color: "#1db954", destacado: false, orden: 19,
+    descripcion_corta: "Entretenimiento completo: video y música.",
+    descripcion: "Perfil propio en Netflix y Prime Video, más Spotify Premium.",
+    planes: [
+      { id: "27ff1fb7-56e2-5735-8d1a-586aa73fdf07", nombre: "Combo · 1 pantalla c/u", descripcion: "Video y música incluidos", duracion_dias: 30, pantallas: 1, precio_venta: 28000, orden: 1, costos: [["p2", 27000, 30]] },
     ],
   },
   {
@@ -339,7 +339,7 @@ export const seedServices: SeedService[] = [
     ],
   },
   {
-    id: "985e8418-2ee8-5d46-8f67-46d790f63577", slug: "ps-plus", nombre: "PlayStation Plus Deluxe", logo_url: "/logos/ps-plus.svg",
+    id: "985e8418-2ee8-5d46-8f67-46d790f63577", slug: "ps-plus", nombre: "PlayStation Plus Deluxe", logo_url: "/logos/ps-plus.png",
     categoria: "gaming", color: "#0070d1", destacado: false, orden: 30,
     descripcion_corta: "Catálogo de juegos para PS4 y PS5.",
     descripcion: "PS Plus Deluxe con catálogo de juegos, clásicos y multijugador en línea.",
@@ -358,7 +358,7 @@ export const seedServices: SeedService[] = [
     ],
   },
   {
-    id: "0577f8f4-e82f-57c8-9420-0dd4c6e71a8d", slug: "mcafee", nombre: "McAfee Antivirus", logo_url: "/logos/mcafee.svg",
+    id: "0577f8f4-e82f-57c8-9420-0dd4c6e71a8d", slug: "mcafee", nombre: "McAfee Antivirus", logo_url: "/logos/mcafee.png",
     categoria: "software", color: "#c01818", destacado: false, orden: 32,
     descripcion_corta: "Protección completa para tus dispositivos.",
     descripcion: "McAfee Antivirus por un año con protección en tiempo real y navegación segura.",

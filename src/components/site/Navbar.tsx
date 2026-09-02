@@ -11,7 +11,7 @@ import { waGeneral } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
 
 const links = [
-  { href: '/servicios', label: 'Servicios' },
+  { href: '/servicios', label: 'Catálogo' },
   { href: '/como-funciona', label: 'Cómo funciona' },
   { href: '/mi-compra', label: 'Mi compra' },
   { href: '/faq', label: 'Preguntas' },
@@ -86,7 +86,7 @@ export function Navbar() {
             WhatsApp
           </a>
           <Link href="/servicios" className="btn-primary btn-sm hidden sm:inline-flex">
-            Ver servicios
+            Ver catálogo
           </Link>
 
           <button
@@ -136,7 +136,7 @@ export function Navbar() {
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
                 <Link href="/servicios" className="btn-primary">
-                  Ver servicios
+                  Ver catálogo
                 </Link>
               </li>
             </ul>

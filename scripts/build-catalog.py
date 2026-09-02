@@ -40,8 +40,8 @@ PROVIDERS = [
 
 # ---------------------------------------------------------------- categorías
 CATEGORIES = [
-    dict(slug="combos",     nombre="Combos",          desc="Varias plataformas en un solo pago, al mejor precio.", icono="layers",       color="#ff2fd0", orden=1),
-    dict(slug="streaming",  nombre="Streaming",       desc="Películas y series bajo demanda.",                     icono="clapperboard", color="#a855f7", orden=2),
+    dict(slug="streaming",  nombre="Streaming",       desc="Películas y series bajo demanda.",                     icono="clapperboard", color="#a855f7", orden=1),
+    dict(slug="combos",     nombre="Combos",          desc="Varias plataformas en un solo pago, al mejor precio.", icono="layers",       color="#ff2fd0", orden=2),
     dict(slug="deportes",   nombre="Deportes",        desc="Fútbol y eventos en vivo.",                            icono="trophy",       color="#f97316", orden=3),
     dict(slug="musica",     nombre="Música",          desc="Canciones y podcasts sin anuncios.",                   icono="music",        color="#22c55e", orden=4),
     dict(slug="ia",         nombre="Inteligencia artificial", desc="Las mejores IA con cuenta propia.",            icono="sparkles",     color="#38bdf8", orden=5),
@@ -305,6 +305,12 @@ srv("mcafee", "McAfee Antivirus", "software",
 # ============================================================================
 # Generación
 # ============================================================================
+
+# El orden de aparición en la tienda sigue el orden de las categorías:
+# primero Streaming, luego Combos, y así sucesivamente.
+_orden_cat = {c["slug"]: c["orden"] for c in CATEGORIES}
+_declarado = {id(x): i for i, x in enumerate(S)}
+S.sort(key=lambda x: (_orden_cat.get(x["cat"], 99), _declarado[id(x)]))
 
 for i, s in enumerate(S):
     s["orden"] = i + 1

@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { createClient, supabaseConfigured } from '@/lib/supabase/server';
 import { getExpirations } from '@/lib/queries';
@@ -8,7 +9,14 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   if (supabaseConfigured()) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
-    email = data.user?.email ?? null;
+    // Sin sesión no se entra al panel. Esta comprobación es independiente del
+    // middleware: aunque este fallara, el panel sigue cerrado.
+    if (!data.user) redirect('/admin/login');
+    email = data.user.email ?? null;
+  } else if (process.env.NODE_ENV === 'production') {
+    // Publicado en internet pero sin base de datos configurada: el panel no
+    // debe quedar accesible con datos de demostración.
+    redirect('/admin/login');
   }
 
   const vencimientos = await getExpirations();
