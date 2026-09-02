@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { MessageCircle, Truck, Scale, TrendingUp, Package } from 'lucide-react';
+import { MessageCircle, Truck, Scale, TrendingUp, Package, Plus, Pencil } from 'lucide-react';
+import { RecordForm } from '@/components/admin/RecordForm';
+import { camposProveedor } from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard, Money } from '@/components/admin/Ui';
 import { ProviderBadge, Badge } from '@/components/ui/Badge';
 import { getProviders, getComparison, getFinanceByProvider } from '@/lib/queries';
@@ -27,9 +29,16 @@ export default async function ProveedoresPage() {
         titulo="Proveedores"
         descripcion="Con quién compras, a qué precio y cuánto te ha dejado cada uno."
       >
-        <Link href="/admin/comparador" className="btn-primary btn-sm">
+        <Link href="/admin/comparador" className="btn-ghost btn-sm">
           <Scale className="h-3.5 w-3.5" /> Comparar precios
         </Link>
+        <RecordForm
+          tabla="providers"
+          titulo="Nuevo proveedor"
+          campos={camposProveedor()}
+          botonLabel="Nuevo proveedor"
+          botonIcono={<Plus className="h-3.5 w-3.5" />}
+        />
       </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -56,16 +65,28 @@ export default async function ProveedoresPage() {
                     {p.email ? ` · ${p.email}` : ''}
                   </p>
                 </div>
-                {p.whatsapp && (
-                  <a
-                    href={waLink(`¡Hola! 👋 Te escribo de ${site.name}, quiero consultar disponibilidad.`, p.whatsapp)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-whatsapp btn-sm shrink-0"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" /> Escribir
-                  </a>
-                )}
+                <div className="flex shrink-0 gap-1.5">
+                  <RecordForm
+                    tabla="providers"
+                    id={p.id}
+                    titulo={`Editar ${p.nombre}`}
+                    campos={camposProveedor(p)}
+                    botonLabel="Editar"
+                    botonClase="btn-ghost btn-sm"
+                    botonIcono={<Pencil className="h-3.5 w-3.5" />}
+                    permiteBorrar
+                  />
+                  {p.whatsapp && (
+                    <a
+                      href={waLink(`¡Hola! 👋 Te escribo de ${site.name}, quiero consultar disponibilidad.`, p.whatsapp)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-whatsapp btn-sm"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" /> Escribir
+                    </a>
+                  )}
+                </div>
               </div>
 
               {p.condiciones && (

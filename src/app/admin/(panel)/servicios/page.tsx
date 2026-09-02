@@ -1,16 +1,20 @@
 import Link from 'next/link';
-import { Clapperboard, Layers, Star, EyeOff, ExternalLink } from 'lucide-react';
+import { Clapperboard, Layers, Star, EyeOff, ExternalLink, Plus, Pencil } from 'lucide-react';
+import { RecordForm } from '@/components/admin/RecordForm';
+import { camposServicio, camposPlan, opcionesCategorias, opcionesServicios } from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard } from '@/components/admin/Ui';
 import { ServiceLogo } from '@/components/ui/ServiceLogo';
 import { Badge } from '@/components/ui/Badge';
-import { getServicesAdmin, isDemo } from '@/lib/queries';
+import { getServicesAdmin, getCategories, isDemo } from '@/lib/queries';
 import { formatDuration, formatMoney, formatNumber } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Servicios y planes' };
 
 export default async function ServiciosAdminPage() {
-  const servicios = await getServicesAdmin();
+  const [servicios, categorias] = await Promise.all([getServicesAdmin(), getCategories()]);
+  const optCategorias = opcionesCategorias(categorias);
+  const optServicios = opcionesServicios(servicios);
 
   const planes = servicios.flatMap((s) => s.service_plans ?? []);
   const activos = servicios.filter((s) => s.activo);
@@ -25,6 +29,14 @@ export default async function ServiciosAdminPage() {
         <Link href="/servicios" target="_blank" className="btn-ghost btn-sm">
           <ExternalLink className="h-3.5 w-3.5" /> Ver tienda
         </Link>
+        <RecordForm
+          tabla="services"
+          titulo="Nuevo servicio"
+          descripcion="Se publica en el catálogo apenas lo guardes."
+          campos={camposServicio(undefined, optCategorias)}
+          botonLabel="Nuevo servicio"
+          botonIcono={<Plus className="h-3.5 w-3.5" />}
+        />
       </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -54,6 +66,17 @@ export default async function ServiciosAdminPage() {
                     {s.categories?.nombre ?? 'Sin categoría'} · /{s.slug}
                   </p>
                 </div>
+                <RecordForm
+                  tabla="services"
+                  id={s.id}
+                  titulo={`Editar ${s.nombre}`}
+                  descripcion="Nombre, categoría, visibilidad y textos del catálogo."
+                  campos={camposServicio(s, optCategorias)}
+                  botonLabel="Editar"
+                  botonClase="btn-ghost btn-sm shrink-0"
+                  botonIcono={<Pencil className="h-3.5 w-3.5" />}
+                  permiteBorrar
+                />
               </div>
 
               {sus.length === 0 ? (
@@ -75,20 +98,45 @@ export default async function ServiciosAdminPage() {
                           {!p.disponible && ' · sin stock'}
                         </p>
                       </div>
-                      <div className="shrink-0 text-right">
-                        {p.precio_descuento && (
-                          <p className="text-[11px] text-white/30 line-through">
-                            {formatMoney(p.precio_venta)}
+                      <div className="flex shrink-0 items-center gap-3">
+                        <div className="text-right">
+                          {p.precio_descuento && (
+                            <p className="text-[11px] text-white/30 line-through">
+                              {formatMoney(p.precio_venta)}
+                            </p>
+                          )}
+                          <p className="font-semibold tabular-nums text-white">
+                            {formatMoney(p.precio_descuento ?? p.precio_venta)}
                           </p>
-                        )}
-                        <p className="font-semibold tabular-nums text-white">
-                          {formatMoney(p.precio_descuento ?? p.precio_venta)}
-                        </p>
+                        </div>
+                        <RecordForm
+                          tabla="service_plans"
+                          id={p.id}
+                          titulo={`${s.nombre} · ${p.nombre}`}
+                          descripcion="Cambia el precio, la duración o el stock de este plan."
+                          campos={camposPlan(p, s.id, optServicios)}
+                          botonLabel=""
+                          botonClase="btn-ghost btn-sm !px-2"
+                          botonIcono={<Pencil className="h-3.5 w-3.5" />}
+                          permiteBorrar
+                        />
                       </div>
                     </li>
                   ))}
                 </ul>
               )}
+
+              <div className="mt-3 flex justify-end">
+                <RecordForm
+                  tabla="service_plans"
+                  titulo={`Nuevo plan de ${s.nombre}`}
+                  descripcion="Una duración y un precio nuevos para este servicio."
+                  campos={camposPlan(undefined, s.id, optServicios)}
+                  botonLabel="Agregar plan"
+                  botonClase="btn-ghost btn-sm"
+                  botonIcono={<Plus className="h-3.5 w-3.5" />}
+                />
+              </div>
             </Panel>
           );
         })}
@@ -100,11 +148,10 @@ export default async function ServiciosAdminPage() {
           {isDemo()
             ? 'Estás en modo demostración, por eso ves servicios de ejemplo. '
             : ''}
-          El catálogo se administra desde las tablas{' '}
-          <code className="rounded bg-black/30 px-1">services</code> y{' '}
-          <code className="rounded bg-black/30 px-1">service_plans</code> en Supabase → Table
-          Editor. Cualquier cambio que guardes ahí aparece automáticamente en la tienda pública, sin
-          tocar el código. En el README encontrarás el detalle de cada campo.
+          Usa <strong className="text-white/80">Nuevo servicio</strong> para agregar una plataforma
+          y <strong className="text-white/80">Agregar plan</strong> para crear cada combinación de
+          duración y precio. El lápiz de cada plan te deja cambiar el precio en segundos. Todo lo que
+          guardes aquí aparece de inmediato en la tienda pública, sin tocar el código.
         </p>
       </div>
     </div>

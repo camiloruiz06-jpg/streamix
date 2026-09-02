@@ -1,22 +1,39 @@
-import { PackageCheck, KeyRound, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { PackageCheck, KeyRound, ShoppingBag, AlertTriangle, Plus, Pencil, Handshake } from 'lucide-react';
+import { RecordForm } from '@/components/admin/RecordForm';
+import {
+  camposCuenta, opcionesClientes, opcionesProveedores, opcionesServicios,
+  opcionesPlanes, opcionesCuentasDisponibles, METODOS_PAGO,
+} from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard, Money, Avatar } from '@/components/admin/Ui';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { AccountBadge } from '@/components/ui/Badge';
-import { getAccounts } from '@/lib/queries';
+import { getAccounts, getCustomers, getProviders, getServicesAdmin } from '@/lib/queries';
 import { formatDateShort, formatNumber } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Cuentas e inventario' };
 
 export default async function CuentasPage() {
-  const cuentas = await getAccounts();
+  const [cuentas, clientes, proveedores, servicios] = await Promise.all([
+    getAccounts(),
+    getCustomers(),
+    getProviders(),
+    getServicesAdmin(),
+  ]);
+
+  const opts = {
+    servicios: opcionesServicios(servicios),
+    planes: opcionesPlanes(servicios),
+    proveedores: opcionesProveedores(proveedores),
+    clientes: opcionesClientes(clientes),
+  };
 
   const disponibles = cuentas.filter((c) => c.estado === 'disponible');
   const activas = cuentas.filter((c) => ['activa', 'vendida'].includes(c.estado));
   const vencidas = cuentas.filter((c) => c.estado === 'vencida');
   const invertido = cuentas.reduce((a, c) => a + c.costo_adquisicion, 0);
 
-  const servicios = [...new Set(cuentas.map((c) => c.services?.nombre).filter(Boolean))] as string[];
+  const nombresServicios = [...new Set(cuentas.map((c) => c.services?.nombre).filter(Boolean))] as string[];
 
   const rows: TableRow[] = cuentas.map((c) => ({
     id: c.id,
@@ -54,6 +71,19 @@ export default async function CuentasPage() {
       <Money key="pv" value={c.precio_venta} />,
       <Money key="g" value={c.ganancia} positivo />,
       <AccountBadge key="e" estado={c.estado} />,
+      <div key="ac" className="flex justify-end">
+        <RecordForm
+          tabla="accounts"
+          id={c.id}
+          titulo={`${c.services?.nombre ?? 'Cuenta'} · ${c.service_plans?.nombre ?? ''}`}
+          descripcion="Edita costos, fechas o a quién está asignada."
+          campos={camposCuenta(c, opts)}
+          botonLabel="Editar"
+          botonClase="btn-ghost btn-sm"
+          botonIcono={<Pencil className="h-3.5 w-3.5" />}
+          permiteBorrar
+        />
+      </div>,
     ],
   }));
 
@@ -62,7 +92,33 @@ export default async function CuentasPage() {
       <PageHeader
         titulo="Cuentas e inventario"
         descripcion="Cada cupo o cuenta que compras a un proveedor, con su costo, su precio de venta y a quién está asignada."
-      />
+      >
+        <RecordForm
+          tabla="accounts"
+          accion="vender"
+          titulo="Entregar una cuenta"
+          descripcion="Asigna un cupo disponible a un cliente y registra la venta de una vez."
+          campos={[
+            { name: 'account_id', label: 'Cuenta a entregar', tipo: 'select', requerido: true, ancho: 'full', opciones: opcionesCuentasDisponibles(cuentas), placeholder: '— elegir del inventario disponible —' },
+            { name: 'customer_id', label: 'Cliente', tipo: 'select', requerido: true, opciones: opts.clientes },
+            { name: 'precio', label: 'Precio cobrado', tipo: 'numero', prefijo: '$', requerido: true },
+            { name: 'metodo_pago', label: 'Método de pago', tipo: 'select', requerido: true, opciones: METODOS_PAGO, valor: 'llaves' },
+            { name: 'fecha_vencimiento', label: 'Vence el', tipo: 'fecha', ayuda: 'Si lo dejas vacío se calcula con la duración del plan' },
+            { name: 'notas', label: 'Notas', tipo: 'textarea', ancho: 'full' },
+          ]}
+          botonLabel="Entregar y vender"
+          botonClase="btn-ghost btn-sm"
+          botonIcono={<Handshake className="h-3.5 w-3.5" />}
+        />
+        <RecordForm
+          tabla="accounts"
+          titulo="Nueva cuenta"
+          descripcion="Registra un cupo que le compraste a un proveedor."
+          campos={camposCuenta(undefined, opts)}
+          botonLabel="Nueva cuenta"
+          botonIcono={<Plus className="h-3.5 w-3.5" />}
+        />
+      </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Disponibles" value={formatNumber(disponibles.length)} hint="Listas para vender" icon={PackageCheck} tono="green" />
@@ -73,7 +129,7 @@ export default async function CuentasPage() {
 
       <Panel>
         <DataTable
-          headers={['Servicio', 'Credencial', 'Cliente', 'Proveedor', 'Vence', 'Costo', 'Precio', 'Ganancia', 'Estado']}
+          headers={['Servicio', 'Credencial', 'Cliente', 'Proveedor', 'Vence', 'Costo', 'Precio', 'Ganancia', 'Estado', '']}
           rows={rows}
           alignRight={[5, 6, 7]}
           searchPlaceholder="Buscar por servicio, cliente, proveedor o credencial…"
@@ -94,7 +150,7 @@ export default async function CuentasPage() {
             {
               key: 'servicio',
               label: 'Servicio',
-              options: servicios.map((s) => ({ value: s, label: s })),
+              options: nombresServicios.map((s) => ({ value: s, label: s })),
             },
           ]}
           emptyTitle="Sin cuentas registradas"

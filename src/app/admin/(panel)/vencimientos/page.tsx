@@ -1,5 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import { PageHeader, Panel, Money } from '@/components/admin/Ui';
+import { BotonActualizarVencimientos } from '@/components/admin/QuickAction';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { SemaforoBadge, AccountBadge, semaforoMeta } from '@/components/ui/Badge';
 import { getExpirations } from '@/lib/queries';
@@ -92,7 +93,9 @@ export default async function VencimientosPage() {
       <PageHeader
         titulo="Próximos vencimientos"
         descripcion="Controla qué servicios están por caducar y avisa al cliente antes de perder la renovación."
-      />
+      >
+        <BotonActualizarVencimientos />
+      </PageHeader>
 
       {/* Semáforo */}
       <div className="mb-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">

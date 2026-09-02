@@ -1,8 +1,13 @@
-import { Receipt, TrendingUp, Coins, Percent } from 'lucide-react';
+import { Receipt, TrendingUp, Coins, Percent, Plus, Pencil } from 'lucide-react';
+import { RecordForm } from '@/components/admin/RecordForm';
+import {
+  opcionesClientes, opcionesProveedores, opcionesServicios, opcionesPlanes,
+  METODOS_PAGO, ESTADOS_VENTA, hoyISO,
+} from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard, Money, Avatar } from '@/components/admin/Ui';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { SaleBadge } from '@/components/ui/Badge';
-import { getSales } from '@/lib/queries';
+import { getSales, getCustomers, getProviders, getServicesAdmin } from '@/lib/queries';
 import { formatDateTime, formatMoney, formatNumber } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +26,25 @@ const metodos: Record<string, string> = {
 };
 
 export default async function VentasPage() {
-  const ventas = await getSales();
+  const [ventas, clientes, proveedores, catalogo] = await Promise.all([
+    getSales(),
+    getCustomers(),
+    getProviders(),
+    getServicesAdmin(),
+  ]);
+
+  const camposVenta = (v?: (typeof ventas)[number]) => [
+    { name: 'customer_id', label: 'Cliente', tipo: 'select' as const, requerido: true, opciones: opcionesClientes(clientes), valor: v?.customer_id },
+    { name: 'service_id', label: 'Servicio', tipo: 'select' as const, requerido: true, opciones: opcionesServicios(catalogo), valor: v?.service_id },
+    { name: 'plan_id', label: 'Plan', tipo: 'select' as const, opciones: opcionesPlanes(catalogo), valor: v?.plan_id },
+    { name: 'provider_id', label: 'Proveedor', tipo: 'select' as const, opciones: opcionesProveedores(proveedores), valor: v?.provider_id },
+    { name: 'precio', label: 'Precio cobrado', tipo: 'numero' as const, prefijo: '$', requerido: true, valor: v?.precio ?? '' },
+    { name: 'costo', label: 'Costo', tipo: 'numero' as const, prefijo: '$', requerido: true, valor: v?.costo ?? '', ayuda: 'La ganancia se calcula sola' },
+    { name: 'metodo_pago', label: 'Método de pago', tipo: 'select' as const, requerido: true, opciones: METODOS_PAGO, valor: v?.metodo_pago ?? 'llaves' },
+    { name: 'estado', label: 'Estado', tipo: 'select' as const, requerido: true, opciones: ESTADOS_VENTA, valor: v?.estado ?? 'entregada' },
+    { name: 'fecha', label: 'Fecha', tipo: 'fecha' as const, valor: v ? v.fecha.slice(0, 10) : hoyISO() },
+    { name: 'notas', label: 'Notas', tipo: 'textarea' as const, ancho: 'full' as const, valor: v?.notas },
+  ];
   const validas = ventas.filter((v) => ['pagada', 'entregada'].includes(v.estado));
 
   const ingresos = validas.reduce((a, v) => a + v.precio, 0);
@@ -66,6 +89,18 @@ export default async function VentasPage() {
       <Money key="g" value={v.ganancia} positivo />,
       <span key="m" className="text-white/60">{metodos[v.metodo_pago] ?? v.metodo_pago}</span>,
       <SaleBadge key="e" estado={v.estado} />,
+      <div key="ac" className="flex justify-end">
+        <RecordForm
+          tabla="sales"
+          id={v.id}
+          titulo={`Venta #${v.numero}`}
+          campos={camposVenta(v)}
+          botonLabel="Editar"
+          botonClase="btn-ghost btn-sm"
+          botonIcono={<Pencil className="h-3.5 w-3.5" />}
+          permiteBorrar
+        />
+      </div>,
     ],
   }));
 
@@ -74,7 +109,16 @@ export default async function VentasPage() {
       <PageHeader
         titulo="Ventas"
         descripcion="Historial completo con precio, costo y ganancia calculada automáticamente."
-      />
+      >
+        <RecordForm
+          tabla="sales"
+          titulo="Registrar venta"
+          descripcion="Para ventas sueltas. Si vas a entregar un cupo del inventario, usa 'Entregar y vender' en Cuentas."
+          campos={camposVenta()}
+          botonLabel="Registrar venta"
+          botonIcono={<Plus className="h-3.5 w-3.5" />}
+        />
+      </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Ventas registradas" value={formatNumber(validas.length)} hint={`${ventas.length} registros en total`} icon={Receipt} tono="brand" />
@@ -85,7 +129,7 @@ export default async function VentasPage() {
 
       <Panel>
         <DataTable
-          headers={['N.º', 'Cliente', 'Servicio', 'Fecha', 'Precio', 'Costo', 'Ganancia', 'Pago', 'Estado']}
+          headers={['N.º', 'Cliente', 'Servicio', 'Fecha', 'Precio', 'Costo', 'Ganancia', 'Pago', 'Estado', '']}
           rows={rows}
           alignRight={[4, 5, 6]}
           defaultSort={{ index: 3, dir: 'desc' }}

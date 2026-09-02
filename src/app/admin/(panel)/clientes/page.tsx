@@ -1,4 +1,6 @@
-import { MessageCircle, Users, UserCheck, Repeat, Crown } from 'lucide-react';
+import { MessageCircle, Users, UserCheck, Repeat, Crown, Plus, Pencil } from 'lucide-react';
+import { RecordForm } from '@/components/admin/RecordForm';
+import { camposCliente } from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard, Money, Avatar } from '@/components/admin/Ui';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { CustomerBadge } from '@/components/ui/Badge';
@@ -61,15 +63,26 @@ export default async function ClientesPage() {
       <Money key="g" value={c.ganancia} positivo />,
       <span key="u" className="whitespace-nowrap text-white/50">{formatDateShort(c.ultima)}</span>,
       <CustomerBadge key="e" estado={c.estado} />,
-      <a
-        key="ac"
-        href={waLink(`¡Hola ${c.nombre}! 👋 Te escribimos de ${site.name}.`, c.whatsapp)}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn-whatsapp btn-sm"
-      >
-        <MessageCircle className="h-3.5 w-3.5" /> Escribir
-      </a>,
+      <div key="ac" className="flex justify-end gap-1.5">
+        <RecordForm
+          tabla="customers"
+          id={c.id}
+          titulo={`Editar a ${c.nombre}`}
+          campos={camposCliente(c)}
+          botonLabel="Editar"
+          botonClase="btn-ghost btn-sm"
+          botonIcono={<Pencil className="h-3.5 w-3.5" />}
+          permiteBorrar
+        />
+        <a
+          href={waLink(`¡Hola ${c.nombre}! 👋 Te escribimos de ${site.name}.`, c.whatsapp)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-whatsapp btn-sm"
+        >
+          <MessageCircle className="h-3.5 w-3.5" /> Escribir
+        </a>
+      </div>,
     ],
   }));
 
@@ -78,7 +91,16 @@ export default async function ClientesPage() {
       <PageHeader
         titulo="Clientes"
         descripcion="Tu base de clientes con historial de compras, servicios activos y valor generado."
-      />
+      >
+        <RecordForm
+          tabla="customers"
+          titulo="Nuevo cliente"
+          descripcion="Con el WhatsApp basta para empezar."
+          campos={camposCliente()}
+          botonLabel="Nuevo cliente"
+          botonIcono={<Plus className="h-3.5 w-3.5" />}
+        />
+      </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Clientes totales" value={formatNumber(clientes.length)} hint={`${clientes.filter((c) => c.estado === 'activo').length} activos`} icon={Users} tono="brand" />
