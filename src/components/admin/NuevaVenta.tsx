@@ -65,6 +65,25 @@ export function NuevaVenta({
   const [precio, setPrecio] = useState(0);
   const [costo, setCosto] = useState(0);
   const [plazas, setPlazas] = useState(1);
+  const [contacto, setContacto] = useState('');
+
+  /**
+   * Si el número o el @usuario que estás escribiendo ya es de alguien, hay que
+   * decirlo AHORA. Antes se juntaba en silencio y terminabas con dos personas
+   * distintas metidas en el mismo cliente.
+   */
+  const yaExiste = useMemo(() => {
+    const t = contacto.trim().replace(/^@/, '').toLowerCase();
+    if (t.length < 4) return null;
+    const soloDigitos = t.replace(/[^0-9]/g, '');
+    return (
+      clientes.find(
+        (c) =>
+          (c.usuario ?? '').toLowerCase() === t ||
+          (soloDigitos.length >= 7 && (c.whatsapp ?? '').replace(/[^0-9]/g, '') === soloDigitos),
+      ) ?? null
+    );
+  }, [contacto, clientes]);
 
   const servicio = servicios.find((s) => s.id === serviceId);
   const planes = useMemo(
@@ -187,12 +206,26 @@ export function NuevaVenta({
                   </label>
                   <input
                     id="v-ccontacto" name="cliente_contacto" required
-                    className="field" placeholder="573015551122   o   @juanperez"
+                    value={contacto} onChange={(e) => setContacto(e.target.value)}
+                    className={cn('field', yaExiste && 'border-amber-400/60')}
+                    placeholder="573015551122   o   @juanperez"
                   />
-                  <p className="mt-1.5 text-xs text-white/35">
-                    El número va con el 57 adelante, sin + ni espacios. Si te dio su usuario,
-                    escríbelo con @.
-                  </p>
+                  {yaExiste ? (
+                    <div className="mt-1.5 flex items-start gap-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-200">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <p>
+                        Ese contacto ya es de{' '}
+                        <strong className="font-semibold">{etiquetaCliente(yaExiste)}</strong>. Si es
+                        la misma persona, sigue y la venta se le suma. Si es alguien distinto, cambia
+                        el número o el usuario: si no, los dos van a quedar como un solo cliente.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-1.5 text-xs text-white/35">
+                      El número va con el 57 adelante, sin + ni espacios. Si te dio su usuario,
+                      escríbelo con @.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="label" htmlFor="v-cnombre">Nombre</label>
@@ -203,8 +236,8 @@ export function NuevaVenta({
                   <input id="v-cmail" name="cliente_email" type="email" className="field" placeholder="opcional" />
                 </div>
                 <p className="text-xs leading-relaxed text-white/40 sm:col-span-2">
-                  Si ese número o usuario ya está registrado se usa el cliente que existe,
-                  no se duplica.
+                  Si ese número o usuario ya está registrado, la venta se le suma a esa persona
+                  en vez de crear un cliente repetido. Te avisamos arriba cuando pase.
                 </p>
               </div>
             )}

@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { MessageCircle, AlertTriangle, Plus } from 'lucide-react';
 import { PageHeader, Panel, Money } from '@/components/admin/Ui';
 import { BotonActualizarVencimientos } from '@/components/admin/QuickAction';
-import { BotonRenovar, BotonCambiarCuenta } from '@/components/admin/SubAcciones';
+import { BotonRenovar, BotonCambiarCuenta, BotonCambiarCliente } from '@/components/admin/SubAcciones';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { SemaforoBadge, semaforoMeta } from '@/components/ui/Badge';
-import { getSubscriptions, getAccountSlots } from '@/lib/queries';
+import { getSubscriptions, getAccountSlots, getCustomers } from '@/lib/queries';
 import { formatDateShort } from '@/lib/format';
 import { waRecordatorio } from '@/lib/whatsapp';
 import type { Semaforo } from '@/lib/types';
@@ -27,7 +27,11 @@ const estadoCuenta: Record<string, string> = {
 };
 
 export default async function VencimientosPage() {
-  const [subs, cuentas] = await Promise.all([getSubscriptions(), getAccountSlots()]);
+  const [subs, cuentas, clientes] = await Promise.all([
+    getSubscriptions(),
+    getAccountSlots(),
+    getCustomers(),
+  ]);
 
   const resumen = ordenSemaforo.map((s) => ({
     semaforo: s,
@@ -105,6 +109,7 @@ export default async function VencimientosPage() {
       <div key="ac" className="flex justify-end gap-1.5">
         <BotonRenovar sub={f} cuentas={cuentas} />
         <BotonCambiarCuenta sub={f} cuentas={cuentas} resaltado={f.necesita_reemplazo} compacto />
+        <BotonCambiarCliente sub={f} clientes={clientes} />
         {f.cliente_whatsapp && (
           <a
             href={waRecordatorio(

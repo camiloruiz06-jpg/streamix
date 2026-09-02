@@ -4,11 +4,11 @@ import { useActionState, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, ArrowLeftRight, Check, Loader2, RefreshCw, X } from 'lucide-react';
-import { renovarSuscripcion, moverSuscripcion, type EstadoAccion } from '@/lib/actions';
-import { formatMoney } from '@/lib/format';
+import { AlertCircle, ArrowLeftRight, Check, Loader2, RefreshCw, UserCog, X } from 'lucide-react';
+import { renovarSuscripcion, moverSuscripcion, reasignarCliente, type EstadoAccion } from '@/lib/actions';
+import { formatMoney, etiquetaCliente, contactoCliente } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { AccountSlotRow, SubscriptionRow } from '@/lib/types';
+import type { AccountSlotRow, Customer, SubscriptionRow } from '@/lib/types';
 
 const vacio: EstadoAccion = {};
 
@@ -294,6 +294,109 @@ export function BotonCambiarCuenta({
               className="btn-primary btn-sm flex-1 justify-center disabled:opacity-40"
             >
               {pendiente ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Moviendo…</> : 'Pasarlo'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </>
+  );
+}
+
+/* -------------------------------------------------- corregir el cliente --- */
+
+/**
+ * Pasa este servicio a otro cliente. Sirve cuando dos personas distintas
+ * quedaron metidas en el mismo cliente por haber escrito el mismo número.
+ */
+export function BotonCambiarCliente({
+  sub, clientes,
+}: { sub: SubscriptionRow; clientes: Customer[] }) {
+  const router = useRouter();
+  const [abierto, setAbierto] = useState(false);
+  const [estado, enviar, pendiente] = useActionState(reasignarCliente, vacio);
+  const [destino, setDestino] = useState('');
+
+  useEffect(() => {
+    if (!estado.ok) return;
+    const t = setTimeout(() => { setAbierto(false); router.refresh(); }, 900);
+    return () => clearTimeout(t);
+  }, [estado.ok, router]);
+
+  const otros = clientes.filter((c) => c.id !== sub.customer_id);
+
+  return (
+    <>
+      <button
+        type="button" onClick={() => setAbierto(true)}
+        title="Este servicio es de otra persona"
+        className="btn-ghost btn-sm !px-2"
+      >
+        <UserCog className="h-3.5 w-3.5" />
+      </button>
+
+      <Modal
+        abierto={abierto} cerrar={() => setAbierto(false)}
+        titulo="¿De quién es este servicio?"
+        descripcion={`${sub.servicio ?? ''} · hoy figura a nombre de ${sub.cliente ?? '—'}`}
+      >
+        <form action={enviar}>
+          <input type="hidden" name="subscription_id" value={sub.subscription_id} />
+
+          <p className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-white/55">
+            Si por escribir el mismo número se te juntaron dos personas, aquí las separas.
+            El servicio y su venta se pasan al cliente correcto; los días no se tocan.
+          </p>
+
+          <div>
+            <label className="label" htmlFor={`rc-cli-${sub.subscription_id}`}>Pasarlo a</label>
+            <select
+              id={`rc-cli-${sub.subscription_id}`} name="customer_id"
+              className="field cursor-pointer" value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+            >
+              <option value="" className="bg-ink-900">— elegir cliente —</option>
+              <option value="nuevo" className="bg-ink-900">➕ Cliente nuevo</option>
+              {otros.map((c) => (
+                <option key={c.id} value={c.id} className="bg-ink-900">
+                  {etiquetaCliente(c)}
+                  {contactoCliente(c) ? ` · ${contactoCliente(c)}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {destino === 'nuevo' && (
+            <div className="mt-4 grid gap-4 rounded-xl border border-brand-400/25 bg-brand-500/[0.06] p-4">
+              <div>
+                <label className="label" htmlFor={`rc-cto-${sub.subscription_id}`}>
+                  Número o usuario de WhatsApp <span className="text-brand-400">*</span>
+                </label>
+                <input
+                  id={`rc-cto-${sub.subscription_id}`} name="cliente_contacto" required
+                  className="field" placeholder="573015551122   o   @juanperez"
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor={`rc-nom-${sub.subscription_id}`}>Nombre</label>
+                <input
+                  id={`rc-nom-${sub.subscription_id}`} name="cliente_nombre"
+                  className="field" placeholder="opcional"
+                />
+              </div>
+            </div>
+          )}
+
+          <Aviso estado={estado} />
+
+          <div className="mt-6 flex gap-2">
+            <button type="button" onClick={() => setAbierto(false)} className="btn-ghost btn-sm flex-1 sm:flex-none">
+              Cancelar
+            </button>
+            <button
+              type="submit" disabled={pendiente || !destino}
+              className="btn-primary btn-sm flex-1 justify-center disabled:opacity-40"
+            >
+              {pendiente ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Pasando…</> : 'Pasarlo'}
             </button>
           </div>
         </form>

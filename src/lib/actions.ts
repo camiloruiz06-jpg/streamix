@@ -356,41 +356,12 @@ export async function registrarVenta(
   const notas = txt(form.get('notas'));
 
   // Cliente nuevo: se crea aquí mismo, sin salir de la pantalla.
+  let avisoCliente: string | null = null;
   if (customerId === 'nuevo') {
-    // Un solo campo: puede venir un número o un @usuario de WhatsApp.
-    const contacto = (txt(form.get('cliente_contacto')) ?? '').trim();
-    const nombre = txt(form.get('cliente_nombre'));
-
-    const esUsuario = contacto.startsWith('@') || /[a-zA-Z_]/.test(contacto);
-    const whatsapp = esUsuario ? null : contacto.replace(/[^0-9]/g, '');
-    const usuario = esUsuario ? contacto.replace(/^@/, '').trim() : null;
-
-    if (!whatsapp && !usuario) {
-      return { error: 'Escribe el número de WhatsApp del cliente, o su @usuario.' };
-    }
-    if (whatsapp && whatsapp.length < 10) {
-      return { error: 'Ese número no parece un WhatsApp válido. Va con el 57 adelante.' };
-    }
-
-    // Si ya lo tienes registrado lo reusamos en vez de duplicarlo.
-    const busqueda = supabase.from('customers').select('id');
-    const { data: existente } = whatsapp
-      ? await busqueda.eq('whatsapp', whatsapp).maybeSingle()
-      : await busqueda.ilike('usuario', usuario as string).maybeSingle();
-
-    if (existente) {
-      customerId = existente.id;
-    } else {
-      const { data: creado, error: eCliente } = await supabase
-        .from('customers')
-        .insert({ nombre, whatsapp, usuario, email: txt(form.get('cliente_email')), estado: 'activo' })
-        .select('id')
-        .single();
-      if (eCliente || !creado) {
-        return { error: `No se pudo crear el cliente: ${eCliente?.message ?? ''}` };
-      }
-      customerId = creado.id;
-    }
+    const r = await resolverCliente(supabase, form);
+    if ('error' in r && r.error) return { error: r.error };
+    customerId = r.id ?? null;
+    avisoCliente = r.aviso ?? null;
   }
 
   if (!customerId) return { error: 'Elige el cliente.' };
@@ -499,13 +470,11 @@ export async function registrarVenta(
   }
 
   refrescar();
-  return {
-    ok: true,
-    mensaje:
-      modo === 'nueva'
-        ? `Cuenta nueva registrada y entregada. Vence el ${sumarDias(dias)}.`
-        : `Entregado en una cuenta que ya tenías. Vence el ${sumarDias(dias)}.`,
-  };
+  const base =
+    modo === 'nueva'
+      ? `Cuenta nueva registrada y entregada. Vence el ${sumarDias(dias)}.`
+      : `Entregado en una cuenta que ya tenías. Vence el ${sumarDias(dias)}.`;
+  return { ok: true, mensaje: avisoCliente ? `${base} ${avisoCliente}` : base };
 }
 
 /** Renueva sumando días encima de los que le queden al cliente. */
@@ -568,4 +537,110 @@ export async function moverSuscripcion(
   if (error) return { error: error.message };
   refrescar();
   return { ok: true, mensaje: 'Listo, quedó en la cuenta nueva con los mismos días.' };
+}
+
+
+/* ------------------------------------------------- resolver un cliente --- */
+
+type ClienteResuelto = { id: string; aviso: string | null; error?: undefined }
+                     | { id?: undefined; aviso?: undefined; error: string };
+
+/**
+ * Toma lo que escribiste en el campo de contacto (un número o un @usuario) y
+ * devuelve el id del cliente. Si ya existe alguien con ese contacto lo reusa,
+ * PERO devuelve un aviso para poder decírtelo: antes lo juntaba en silencio y
+ * terminabas con varias personas metidas en un mismo cliente.
+ */
+async function resolverCliente(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  form: FormData,
+): Promise<ClienteResuelto> {
+  const contacto = (txt(form.get('cliente_contacto')) ?? '').trim();
+  const nombre = txt(form.get('cliente_nombre'));
+
+  const esUsuario = contacto.startsWith('@') || /[a-zA-Z_]/.test(contacto);
+  const whatsapp = esUsuario ? null : contacto.replace(/[^0-9]/g, '');
+  const usuario = esUsuario ? contacto.replace(/^@/, '').trim() : null;
+
+  if (!whatsapp && !usuario) {
+    return { error: 'Escribe el número de WhatsApp del cliente, o su @usuario.' };
+  }
+  if (whatsapp && whatsapp.length < 10) {
+    return { error: 'Ese número no parece un WhatsApp válido. Va con el 57 adelante.' };
+  }
+  // Números de relleno: 3000000000, 1111111111… casi siempre son un error de dedo
+  if (whatsapp && /^(\d)\1{6,}$/.test(whatsapp.slice(1))) {
+    return {
+      error:
+        'Ese número parece de relleno. Escribe el WhatsApp real del cliente, o su @usuario, ' +
+        'para no mezclarlo con otra persona.',
+    };
+  }
+
+  const { data: existente } = whatsapp
+    ? await supabase.from('customers').select('id, nombre, usuario, whatsapp')
+        .eq('whatsapp', whatsapp).maybeSingle()
+    : await supabase.from('customers').select('id, nombre, usuario, whatsapp')
+        .ilike('usuario', usuario as string).maybeSingle();
+
+  if (existente) {
+    const como = existente.nombre?.trim()
+      || (existente.usuario ? `@${existente.usuario}` : null)
+      || existente.whatsapp
+      || 'un cliente que ya tenías';
+    return {
+      id: existente.id,
+      aviso: `Ojo: ese contacto ya era de ${como}, así que la venta se le sumó a esa persona.`,
+    };
+  }
+
+  const { data: creado, error } = await supabase
+    .from('customers')
+    .insert({ nombre, whatsapp, usuario, email: txt(form.get('cliente_email')), estado: 'activo' })
+    .select('id')
+    .single();
+
+  if (error || !creado) return { error: `No se pudo crear el cliente: ${error?.message ?? ''}` };
+  return { id: creado.id, aviso: null };
+}
+
+/**
+ * Pasa una suscripción (y sus ventas) a otro cliente.
+ * Sirve para separar a dos personas que quedaron metidas en el mismo cliente
+ * por haber escrito el mismo número.
+ */
+export async function reasignarCliente(
+  _estado: EstadoAccion,
+  form: FormData,
+): Promise<EstadoAccion> {
+  if (!supabaseConfigured()) return { error: 'La base de datos no está conectada.' };
+  const supabase = await createClient();
+  const { data: sesion } = await supabase.auth.getUser();
+  if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
+
+  const subId = txt(form.get('subscription_id'));
+  if (!subId) return { error: 'Falta la suscripción.' };
+
+  let destino: string | null = txt(form.get('customer_id'));
+  let aviso: string | null = null;
+
+  if (!destino || destino === 'nuevo') {
+    const r = await resolverCliente(supabase, form);
+    if ('error' in r && r.error) return { error: r.error };
+    destino = r.id ?? null;
+    aviso = r.aviso ?? null;
+  }
+
+  const { error: e1 } = await supabase
+    .from('subscriptions').update({ customer_id: destino }).eq('id', subId);
+  if (e1) return { error: e1.message };
+
+  // Las ventas de esa suscripción se van con él
+  await supabase.from('sales').update({ customer_id: destino }).eq('subscription_id', subId);
+
+  refrescar();
+  return {
+    ok: true,
+    mensaje: aviso ?? 'Listo, ese servicio quedó a nombre del cliente correcto.',
+  };
 }
