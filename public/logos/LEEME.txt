@@ -1,0 +1,25 @@
+Logos de los servicios
+======================
+
+Cada archivo debe llamarse igual que el "slug" del servicio.
+Formatos aceptados: .svg, .png, .webp, .jpg
+
+Ejemplos:
+  netflix.svg        -> servicio "netflix"
+  disney-plus.png    -> servicio "disney-plus"
+  canva-pro.png      -> servicio "canva-pro"
+
+Después de agregar archivos, ejecuta:
+
+  python3 scripts/build-catalog.py
+
+Eso vuelve a leer esta carpeta y conecta cada logo con su servicio.
+Los servicios sin logo muestran un monograma con el color de la marca,
+que también se ve bien: no es obligatorio poner todos.
+
+Recomendaciones:
+  - Preferir SVG o PNG con fondo transparente.
+  - Logos claros o blancos se ven mejor sobre el fondo oscuro.
+  - Tamaño sugerido para PNG: 256x256 px.
+
+Logos generados automáticamente: 15
