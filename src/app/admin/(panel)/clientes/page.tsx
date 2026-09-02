@@ -5,7 +5,7 @@ import { PageHeader, Panel, StatCard, Money, Avatar } from '@/components/admin/U
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { CustomerBadge } from '@/components/ui/Badge';
 import { getCustomers, getSales, getExpirations } from '@/lib/queries';
-import { formatDateShort, formatMoney, formatNumber } from '@/lib/format';
+import { formatDateShort, formatMoney, formatNumber, etiquetaCliente, contactoCliente } from '@/lib/format';
 import { waLink } from '@/lib/whatsapp';
 import { site } from '@/config/site';
 
@@ -43,18 +43,22 @@ export default async function ClientesPage() {
   const rows: TableRow[] = enriquecidos.map((c) => ({
     id: c.id,
     tags: { estado: c.estado },
-    search: [c.nombre, c.whatsapp, c.email, c.notas].filter(Boolean).join(' '),
-    sort: [c.nombre, c.whatsapp, c.compras, c.activos, c.total, c.ganancia,
+    search: [c.nombre, c.usuario, c.whatsapp, c.email, c.notas].filter(Boolean).join(' '),
+    sort: [etiquetaCliente(c), c.whatsapp ?? '', c.compras, c.activos, c.total, c.ganancia,
       c.ultima ? new Date(c.ultima).getTime() : 0, c.estado, ''],
     cells: [
       <div key="n" className="flex items-center gap-2.5">
-        <Avatar nombre={c.nombre} />
+        <Avatar nombre={etiquetaCliente(c)} />
         <div className="min-w-0">
-          <p className="truncate font-medium text-white">{c.nombre}</p>
+          <p className="truncate font-medium text-white">{etiquetaCliente(c)}</p>
           {c.email && <p className="truncate text-xs text-white/35">{c.email}</p>}
         </div>
       </div>,
-      <span key="w" className="tabular-nums text-white/60">{c.whatsapp}</span>,
+      <div key="w" className="min-w-0">
+        {c.whatsapp && <p className="tabular-nums text-white/60">{c.whatsapp}</p>}
+        {c.usuario && <p className="truncate text-xs text-brand-300">@{c.usuario.replace(/^@/, '')}</p>}
+        {!c.whatsapp && !c.usuario && <span className="text-white/25">—</span>}
+      </div>,
       <span key="c" className="tabular-nums text-white/70">{c.compras}</span>,
       <span key="a" className={c.activos > 0 ? 'font-semibold text-emerald-300' : 'text-white/35'}>
         {c.activos}
@@ -67,21 +71,33 @@ export default async function ClientesPage() {
         <RecordForm
           tabla="customers"
           id={c.id}
-          titulo={`Editar a ${c.nombre}`}
+          titulo={`Editar a ${etiquetaCliente(c)}`}
           campos={camposCliente(c)}
           botonLabel="Editar"
           botonClase="btn-ghost btn-sm"
           botonIcono={<Pencil className="h-3.5 w-3.5" />}
           permiteBorrar
         />
-        <a
-          href={waLink(`¡Hola ${c.nombre}! 👋 Te escribimos de ${site.name}.`, c.whatsapp)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-whatsapp btn-sm"
-        >
-          <MessageCircle className="h-3.5 w-3.5" /> Escribir
-        </a>
+        {c.whatsapp ? (
+          <a
+            href={waLink(
+              `¡Hola${c.nombre ? ` ${c.nombre}` : ''}! 👋 Te escribimos de ${site.name}.`,
+              c.whatsapp,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-whatsapp btn-sm"
+          >
+            <MessageCircle className="h-3.5 w-3.5" /> Escribir
+          </a>
+        ) : (
+          <span
+            className="whitespace-nowrap text-xs text-white/30"
+            title="WhatsApp todavía no deja abrir un chat con un enlace usando solo el usuario"
+          >
+            solo @usuario
+          </span>
+        )}
       </div>,
     ],
   }));
@@ -95,7 +111,7 @@ export default async function ClientesPage() {
         <RecordForm
           tabla="customers"
           titulo="Nuevo cliente"
-          descripcion="Con el WhatsApp basta para empezar."
+          descripcion="Con el número o el @usuario basta. El nombre es opcional."
           campos={camposCliente()}
           botonLabel="Nuevo cliente"
           botonIcono={<Plus className="h-3.5 w-3.5" />}
@@ -111,11 +127,11 @@ export default async function ClientesPage() {
 
       <Panel>
         <DataTable
-          headers={['Cliente', 'WhatsApp', 'Compras', 'Activos', 'Total gastado', 'Ganancia', 'Última compra', 'Estado', 'Acción']}
+          headers={['Cliente', 'Contacto', 'Compras', 'Activos', 'Total gastado', 'Ganancia', 'Última compra', 'Estado', 'Acción']}
           rows={rows}
           alignRight={[4, 5]}
           defaultSort={{ index: 4, dir: 'desc' }}
-          searchPlaceholder="Buscar por nombre, WhatsApp o correo…"
+          searchPlaceholder="Buscar por nombre, usuario, WhatsApp o correo…"
           filters={[
             {
               key: 'estado',

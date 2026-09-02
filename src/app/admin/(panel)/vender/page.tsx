@@ -20,7 +20,7 @@ export default async function VenderPage() {
         descripcion="Te escribieron por WhatsApp. Elige el cliente y el servicio, y el panel te dice si ya tienes una plaza libre o a qué proveedor conviene comprarle."
       />
       <NuevaVenta
-        clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre, whatsapp: c.whatsapp }))}
+        clientes={clientes}
         servicios={servicios.filter((s) => s.activo)}
         cuentas={cuentas}
         proveedores={proveedores}

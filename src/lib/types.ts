@@ -85,8 +85,12 @@ export interface ProviderPrice {
 
 export interface Customer {
   id: string;
-  nombre: string;
-  whatsapp: string;
+  /** Opcional: si no lo pones se muestra el @usuario o el número. */
+  nombre: string | null;
+  /** Puede faltar si solo tienes el @usuario. */
+  whatsapp: string | null;
+  /** Nombre de usuario de WhatsApp, sin la @. */
+  usuario: string | null;
   email: string | null;
   documento: string | null;
   estado: CustomerStatus;
@@ -275,6 +279,7 @@ export interface SubscriptionRow {
   customer_id: string;
   cliente: string | null;
   cliente_whatsapp: string | null;
+  cliente_usuario: string | null;
   service_id: string;
   servicio: string | null;
   servicio_color: string | null;
@@ -293,6 +298,8 @@ export interface SubscriptionRow {
   precio: number;
   costo_adquisicion: number | null;
   estado: SubscriptionStatus;
+  /** Estado de la cuenta que está usando (no del cliente). */
+  cuenta_estado: AccountStatus | null;
   dias_restantes: number | null;
   dias_cuenta: number | null;
   /** La cuenta se vence antes de que se acaben los días del cliente. */

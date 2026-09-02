@@ -5,6 +5,7 @@
  */
 
 import type { Campo } from '@/components/admin/RecordForm';
+import { etiquetaCliente, contactoCliente } from '@/lib/format';
 import type { Customer, Provider, Service, ServicePlan, Account, Category } from '@/lib/types';
 
 export const ESTADOS_CLIENTE = [
@@ -54,7 +55,10 @@ export const hoyISO = () => new Date().toISOString().slice(0, 10);
 /* ------------------------------------------------------------- opciones */
 
 export const opcionesClientes = (cs: Customer[]) =>
-  cs.map((c) => ({ value: c.id, label: `${c.nombre} · ${c.whatsapp}` }));
+  cs.map((c) => {
+    const extra = contactoCliente(c);
+    return { value: c.id, label: extra ? `${etiquetaCliente(c)} · ${extra}` : etiquetaCliente(c) };
+  });
 
 export const opcionesProveedores = (ps: Provider[]) =>
   ps.map((p) => ({ value: p.id, label: p.nombre }));
@@ -85,8 +89,9 @@ export const opcionesCuentasDisponibles = (as: Account[]) =>
 
 export function camposCliente(c?: Customer): Campo[] {
   return [
-    { name: 'nombre', label: 'Nombre completo', requerido: true, valor: c?.nombre, placeholder: 'Juan Pérez' },
-    { name: 'whatsapp', label: 'WhatsApp', tipo: 'tel', requerido: true, valor: c?.whatsapp, placeholder: '573015551122', ayuda: 'Con el 57 al inicio, sin espacios ni +' },
+    { name: 'whatsapp', label: 'Número de WhatsApp', tipo: 'tel', valor: c?.whatsapp, placeholder: '573015551122', ayuda: 'Con el 57 al inicio, sin espacios ni +' },
+    { name: 'usuario', label: 'Usuario de WhatsApp', valor: c?.usuario, placeholder: 'sin la @', ayuda: 'Con el número basta, o con el usuario, o con los dos' },
+    { name: 'nombre', label: 'Nombre', valor: c?.nombre, placeholder: 'opcional', ancho: 'full' },
     { name: 'email', label: 'Correo', tipo: 'email', valor: c?.email, placeholder: 'opcional' },
     { name: 'documento', label: 'Documento', valor: c?.documento, placeholder: 'opcional' },
     { name: 'estado', label: 'Estado', tipo: 'select', opciones: ESTADOS_CLIENTE, valor: c?.estado ?? 'activo', requerido: true },

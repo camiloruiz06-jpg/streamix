@@ -51,6 +51,8 @@ export default async function CuentasPage() {
     const usadas = pl?.plazas_ocupadas ?? 0;
     const disp = pl?.plazas_libres ?? totales - usadas;
     const quien = ocupantes.get(c.id) ?? [];
+    // Cuenta que ya no sirve pero todavía tiene gente adentro
+    const mala = !['activa', 'disponible'].includes(c.estado) && quien.length > 0;
 
     return {
       id: c.id,
@@ -95,9 +97,24 @@ export default async function CuentasPage() {
               : <span className="text-white/30">llena</span>}
           </p>
         </div>,
-        <span key="q" className="text-xs text-white/60">
-          {quien.length === 0 ? <span className="text-white/25">— nadie —</span> : quien.join(', ')}
-        </span>,
+        <div key="q" className="min-w-0 text-xs">
+          {quien.length === 0 ? (
+            <span className="text-white/25">— nadie —</span>
+          ) : mala ? (
+            <>
+              <p className="truncate font-medium text-amber-200">{quien.join(', ')}</p>
+              <Link
+                href="/admin/vencimientos"
+                className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 underline decoration-amber-300/40 underline-offset-2 hover:text-amber-200"
+              >
+                <AlertTriangle className="h-3 w-3" />
+                {quien.length === 1 ? 'pásalo' : 'pásalos'} a otra cuenta
+              </Link>
+            </>
+          ) : (
+            <span className="text-white/60">{quien.join(', ')}</span>
+          )}
+        </div>,
         <span key="p" className="text-white/60">{c.providers?.nombre ?? '—'}</span>,
         <span key="fv" className="whitespace-nowrap tabular-nums text-white/60">
           {formatDateShort(c.fecha_vencimiento)}

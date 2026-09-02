@@ -161,6 +161,14 @@ export default async function VentasPage() {
           emptyText="Registra tus ventas para ver aquí ingresos, costos y ganancia."
         />
       </Panel>
+
+      <p className="mt-6 rounded-2xl border border-white/10 bg-ink-900/40 p-4 text-xs leading-relaxed text-white/40">
+        <strong className="text-white/60">Por qué una venta puede mostrar todo el costo:</strong>{' '}
+        el costo de una cuenta se descuenta una sola vez, en la primera venta que le haces. Si una
+        cuenta de 6 plazas te costó $12.000 y la primera plaza la vendes en $13.000, esa venta
+        muestra $1.000 de ganancia. Las 5 plazas que vendas después van con costo $0, así que ahí es
+        donde aparece la ganancia de verdad. Míralo por cuenta, no por venta suelta.
+      </p>
     </div>
   );
 }

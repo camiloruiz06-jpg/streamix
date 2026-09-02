@@ -168,13 +168,13 @@ const provDe = (slug: string, idx = 0) => {
 /* --------------------------------------------------------------- clientes */
 
 export const demoCustomers: Customer[] = [
-  { id: 'cl1', nombre: 'Juan Pérez',      whatsapp: '573015551122', email: 'juan.perez@gmail.com',    documento: null, estado: 'activo',   notas: 'Cliente recurrente', created_at: t(-200) },
-  { id: 'cl2', nombre: 'María Gómez',     whatsapp: '573025552233', email: 'maria.gomez@gmail.com',   documento: null, estado: 'activo',   notas: null, created_at: t(-160) },
-  { id: 'cl3', nombre: 'Carlos Ramírez',  whatsapp: '573035553344', email: null,                      documento: null, estado: 'activo',   notas: 'Prefiere pago por Nequi', created_at: t(-120) },
-  { id: 'cl4', nombre: 'Ana Torres',      whatsapp: '573045554455', email: 'ana.torres@outlook.com',  documento: null, estado: 'activo',   notas: null, created_at: t(-90) },
-  { id: 'cl5', nombre: 'Luis Martínez',   whatsapp: '573055555566', email: null,                      documento: null, estado: 'inactivo', notas: 'No renovó el último mes', created_at: t(-75) },
-  { id: 'cl6', nombre: 'Sofía Herrera',   whatsapp: '573065556677', email: 'sofia.h@gmail.com',       documento: null, estado: 'activo',   notas: 'Llegó por referido', created_at: t(-40) },
-  { id: 'cl7', nombre: 'Andrés Vargas',   whatsapp: '573075557788', email: null,                      documento: null, estado: 'activo',   notas: null, created_at: t(-25) },
+  { id: 'cl1', nombre: 'Juan Pérez', usuario: null,      whatsapp: '573015551122', email: 'juan.perez@gmail.com',    documento: null, estado: 'activo',   notas: 'Cliente recurrente', created_at: t(-200) },
+  { id: 'cl2', nombre: 'María Gómez', usuario: null,     whatsapp: '573025552233', email: 'maria.gomez@gmail.com',   documento: null, estado: 'activo',   notas: null, created_at: t(-160) },
+  { id: 'cl3', nombre: 'Carlos Ramírez', usuario: null,  whatsapp: '573035553344', email: null,                      documento: null, estado: 'activo',   notas: 'Prefiere pago por Nequi', created_at: t(-120) },
+  { id: 'cl4', nombre: 'Ana Torres', usuario: null,      whatsapp: '573045554455', email: 'ana.torres@outlook.com',  documento: null, estado: 'activo',   notas: null, created_at: t(-90) },
+  { id: 'cl5', nombre: 'Luis Martínez', usuario: null,   whatsapp: '573055555566', email: null,                      documento: null, estado: 'inactivo', notas: 'No renovó el último mes', created_at: t(-75) },
+  { id: 'cl6', nombre: 'Sofía Herrera', usuario: null,   whatsapp: '573065556677', email: 'sofia.h@gmail.com',       documento: null, estado: 'activo',   notas: 'Llegó por referido', created_at: t(-40) },
+  { id: 'cl7', nombre: 'Andrés Vargas', usuario: null,   whatsapp: '573075557788', email: null,                      documento: null, estado: 'activo',   notas: null, created_at: t(-25) },
 ];
 
 const custById = new Map(demoCustomers.map((c) => [c.id, c]));
@@ -449,6 +449,7 @@ export const demoSubscriptions: SubscriptionRow[] = demoAccounts
       customer_id: a.customer_id as string,
       cliente: a.customers?.nombre ?? null,
       cliente_whatsapp: a.customers?.whatsapp ?? null,
+      cliente_usuario: null,
       service_id: a.service_id,
       servicio: a.services?.nombre ?? null,
       servicio_color: a.services?.color ?? null,
@@ -467,9 +468,10 @@ export const demoSubscriptions: SubscriptionRow[] = demoAccounts
       precio: a.precio_venta,
       costo_adquisicion: a.costo_adquisicion,
       estado: (dias !== null && dias < 0 ? 'vencida' : dias !== null && dias <= 3 ? 'por_vencer' : 'activa') as SubscriptionRow['estado'],
+      cuenta_estado: a.estado,
       dias_restantes: dias,
       dias_cuenta: dias,
-      necesita_reemplazo: false,
+      necesita_reemplazo: !['activa', 'disponible'].includes(a.estado),
       semaforo,
     };
   })

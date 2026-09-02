@@ -8,9 +8,9 @@ import {
   Sparkles, TrendingDown, UserPlus, Users, Wallet,
 } from 'lucide-react';
 import { registrarVenta, type EstadoAccion } from '@/lib/actions';
-import { formatMoney } from '@/lib/format';
+import { formatMoney, etiquetaCliente, contactoCliente } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { AccountSlotRow, ProviderOptionRow, Service } from '@/lib/types';
+import type { AccountSlotRow, Customer, ProviderOptionRow, Service } from '@/lib/types';
 
 const vacio: EstadoAccion = {};
 
@@ -47,7 +47,7 @@ function Seccion({ n, titulo, hint, children }: {
 export function NuevaVenta({
   clientes, servicios, cuentas, proveedores,
 }: {
-  clientes: { id: string; nombre: string; whatsapp: string }[];
+  clientes: Customer[];
   servicios: Service[];
   cuentas: AccountSlotRow[];
   proveedores: ProviderOptionRow[];
@@ -169,7 +169,8 @@ export function NuevaVenta({
                 <option value="nuevo" className="bg-ink-900">➕ Cliente nuevo (lo creo aquí)</option>
                 {clientes.map((c) => (
                   <option key={c.id} value={c.id} className="bg-ink-900">
-                    {c.nombre} · {c.whatsapp}
+                    {etiquetaCliente(c)}
+                    {contactoCliente(c) ? ` · ${contactoCliente(c)}` : ''}
                   </option>
                 ))}
               </select>
@@ -180,28 +181,30 @@ export function NuevaVenta({
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-200 sm:col-span-2">
                   <UserPlus className="h-3.5 w-3.5" /> Datos del cliente nuevo
                 </p>
-                <div>
-                  <label className="label" htmlFor="v-cnombre">
-                    Nombre <span className="text-brand-400">*</span>
-                  </label>
-                  <input id="v-cnombre" name="cliente_nombre" required className="field" placeholder="Juan Pérez" />
-                </div>
-                <div>
-                  <label className="label" htmlFor="v-cwa">
-                    WhatsApp <span className="text-brand-400">*</span>
+                <div className="sm:col-span-2">
+                  <label className="label" htmlFor="v-ccontacto">
+                    Número o usuario de WhatsApp <span className="text-brand-400">*</span>
                   </label>
                   <input
-                    id="v-cwa" name="cliente_whatsapp" type="tel" required inputMode="numeric"
-                    className="field" placeholder="573015551122"
+                    id="v-ccontacto" name="cliente_contacto" required
+                    className="field" placeholder="573015551122   o   @juanperez"
                   />
-                  <p className="mt-1.5 text-xs text-white/35">Con el 57 adelante, sin + ni espacios.</p>
+                  <p className="mt-1.5 text-xs text-white/35">
+                    El número va con el 57 adelante, sin + ni espacios. Si te dio su usuario,
+                    escríbelo con @.
+                  </p>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
+                  <label className="label" htmlFor="v-cnombre">Nombre</label>
+                  <input id="v-cnombre" name="cliente_nombre" className="field" placeholder="opcional" />
+                </div>
+                <div>
                   <label className="label" htmlFor="v-cmail">Correo</label>
                   <input id="v-cmail" name="cliente_email" type="email" className="field" placeholder="opcional" />
                 </div>
                 <p className="text-xs leading-relaxed text-white/40 sm:col-span-2">
-                  Si ese WhatsApp ya está registrado se usa el cliente que existe, no se duplica.
+                  Si ese número o usuario ya está registrado se usa el cliente que existe,
+                  no se duplica.
                 </p>
               </div>
             )}
@@ -491,7 +494,10 @@ export function NuevaVenta({
               <dd className="truncate text-right text-white/80">
                 {customerId === 'nuevo'
                   ? 'Cliente nuevo'
-                  : clientes.find((c) => c.id === customerId)?.nombre ?? '—'}
+                  : (() => {
+                      const c = clientes.find((x) => x.id === customerId);
+                      return c ? etiquetaCliente(c) : '—';
+                    })()}
               </dd>
             </div>
             <div className="flex justify-between gap-3">

@@ -19,7 +19,7 @@ import { createClient, supabaseConfigured } from '@/lib/supabase/server';
 const TABLAS = {
   customers: {
     etiqueta: 'cliente',
-    columnas: ['nombre', 'whatsapp', 'email', 'documento', 'estado', 'notas'],
+    columnas: ['nombre', 'whatsapp', 'usuario', 'email', 'documento', 'estado', 'notas'],
     numericas: [] as string[],
   },
   providers: {
@@ -357,21 +357,33 @@ export async function registrarVenta(
 
   // Cliente nuevo: se crea aquí mismo, sin salir de la pantalla.
   if (customerId === 'nuevo') {
+    // Un solo campo: puede venir un número o un @usuario de WhatsApp.
+    const contacto = (txt(form.get('cliente_contacto')) ?? '').trim();
     const nombre = txt(form.get('cliente_nombre'));
-    const whatsapp = (txt(form.get('cliente_whatsapp')) ?? '').replace(/[^0-9]/g, '');
-    if (!nombre) return { error: 'Escribe el nombre del cliente nuevo.' };
-    if (whatsapp.length < 10) return { error: 'El WhatsApp del cliente no parece válido.' };
 
-    // Si ya existe alguien con ese WhatsApp lo reusamos en vez de duplicarlo.
-    const { data: existente } = await supabase
-      .from('customers').select('id').eq('whatsapp', whatsapp).maybeSingle();
+    const esUsuario = contacto.startsWith('@') || /[a-zA-Z_]/.test(contacto);
+    const whatsapp = esUsuario ? null : contacto.replace(/[^0-9]/g, '');
+    const usuario = esUsuario ? contacto.replace(/^@/, '').trim() : null;
+
+    if (!whatsapp && !usuario) {
+      return { error: 'Escribe el número de WhatsApp del cliente, o su @usuario.' };
+    }
+    if (whatsapp && whatsapp.length < 10) {
+      return { error: 'Ese número no parece un WhatsApp válido. Va con el 57 adelante.' };
+    }
+
+    // Si ya lo tienes registrado lo reusamos en vez de duplicarlo.
+    const busqueda = supabase.from('customers').select('id');
+    const { data: existente } = whatsapp
+      ? await busqueda.eq('whatsapp', whatsapp).maybeSingle()
+      : await busqueda.ilike('usuario', usuario as string).maybeSingle();
 
     if (existente) {
       customerId = existente.id;
     } else {
       const { data: creado, error: eCliente } = await supabase
         .from('customers')
-        .insert({ nombre, whatsapp, email: txt(form.get('cliente_email')), estado: 'activo' })
+        .insert({ nombre, whatsapp, usuario, email: txt(form.get('cliente_email')), estado: 'activo' })
         .select('id')
         .single();
       if (eCliente || !creado) {

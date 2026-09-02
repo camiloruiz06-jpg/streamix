@@ -194,8 +194,14 @@ export function BotonRenovar({ sub, cuentas }: { sub: SubscriptionRow; cuentas: 
 /* ------------------------------------------------------- cambiar cuenta --- */
 
 export function BotonCambiarCuenta({
-  sub, cuentas, resaltado = false,
-}: { sub: SubscriptionRow; cuentas: AccountSlotRow[]; resaltado?: boolean }) {
+  sub, cuentas, resaltado = false, compacto = false,
+}: {
+  sub: SubscriptionRow;
+  cuentas: AccountSlotRow[];
+  resaltado?: boolean;
+  /** Dentro de la tabla el botón va sin texto, para que quepan las columnas. */
+  compacto?: boolean;
+}) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [estado, enviar, pendiente] = useActionState(moverSuscripcion, vacio);
@@ -219,7 +225,7 @@ export function BotonCambiarCuenta({
         className={cn('btn-sm !px-2', resaltado ? 'btn-primary' : 'btn-ghost')}
       >
         <ArrowLeftRight className="h-3.5 w-3.5" />
-        {resaltado && <span className="hidden sm:inline">Cambiar</span>}
+        {resaltado && !compacto && <span className="hidden sm:inline">Cambiar</span>}
       </button>
 
       <Modal

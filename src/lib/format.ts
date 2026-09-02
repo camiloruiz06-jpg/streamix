@@ -92,3 +92,35 @@ export function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
+/**
+ * Cómo se muestra un cliente: su nombre si lo pusiste; si no, el @usuario de
+ * WhatsApp; si no, el número. WhatsApp permite las dos cosas a la vez.
+ */
+export function etiquetaCliente(c: {
+  nombre?: string | null;
+  usuario?: string | null;
+  whatsapp?: string | null;
+}): string {
+  const nombre = c.nombre?.trim();
+  if (nombre) return nombre;
+  const usuario = c.usuario?.trim();
+  if (usuario) return `@${usuario.replace(/^@/, '')}`;
+  const wa = c.whatsapp?.trim();
+  if (wa) return wa;
+  return 'Sin identificar';
+}
+
+/** El contacto secundario, para mostrarlo debajo del nombre. */
+export function contactoCliente(c: {
+  nombre?: string | null;
+  usuario?: string | null;
+  whatsapp?: string | null;
+}): string | null {
+  const partes: string[] = [];
+  if (c.usuario?.trim()) partes.push(`@${c.usuario.trim().replace(/^@/, '')}`);
+  if (c.whatsapp?.trim()) partes.push(c.whatsapp.trim());
+  // Si no hay nombre, el primero ya se usó como título
+  if (!c.nombre?.trim()) partes.shift();
+  return partes.length ? partes.join(' · ') : null;
+}

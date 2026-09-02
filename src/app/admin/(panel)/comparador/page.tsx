@@ -2,6 +2,7 @@ import { Trophy, Scale, TrendingDown, Percent } from 'lucide-react';
 import { PageHeader, Panel, StatCard, Money } from '@/components/admin/Ui';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { Badge } from '@/components/ui/Badge';
+import { BuscadorGanadores } from '@/components/admin/BuscadorGanadores';
 import { getComparison } from '@/lib/queries';
 import { formatDuration, formatMoney, formatNumber } from '@/lib/format';
 
@@ -94,34 +95,10 @@ export default async function ComparadorPage() {
       {/* Ganadores por servicio */}
       <Panel
         titulo="Dónde conviene comprar cada servicio"
-        descripcion="El proveedor más barato por cada combinación de servicio y plan."
+        descripcion="El proveedor más barato por cada combinación de servicio y plan. Busca el que necesites."
         className="mb-5"
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {ganadoras.map((g) => (
-            <div
-              key={g.price_id}
-              className="rounded-2xl border border-emerald-400/25 bg-emerald-500/[0.07] p-4"
-            >
-              <p className="text-sm font-semibold text-white">{g.servicio}</p>
-              <p className="text-xs text-white/45">{g.plan}</p>
-              <p className="mt-3 font-display text-xl font-extrabold text-emerald-300">
-                {g.proveedor}
-              </p>
-              <p className="mt-1 text-xs text-white/50">
-                {formatMoney(g.costo)} por {formatDuration(g.duracion_dias)}
-                {' · '}
-                <span className="text-white/35">{formatMoney(g.costo_30_dias)}/30 d.</span>
-              </p>
-              {g.margen !== null && (
-                <p className="mt-2 text-xs text-white/45">
-                  Margen: <Money value={g.margen} positivo />{' '}
-                  {g.margen_pct !== null && <span className="text-white/30">({g.margen_pct}%)</span>}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        <BuscadorGanadores ganadoras={ganadoras} />
       </Panel>
 
       <Panel>
