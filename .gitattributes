@@ -1,0 +1,10 @@
+# Git guarda siempre finales de linea LF; en Windows los convierte al sacar.
+* text=auto eol=lf
+
+# Archivos binarios: no tocar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.zip binary

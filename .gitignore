@@ -12,3 +12,10 @@ npm-debug.log*
 next-env.d.ts
 tsconfig.tsbuildinfo
 _to_delete/
+
+# Paquetes de entrega
+*.zip
+
+# Imagenes originales (se procesan a public/logos)
+/logos/
+_to_delete/
