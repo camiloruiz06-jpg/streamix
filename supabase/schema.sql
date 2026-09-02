@@ -53,15 +53,6 @@ begin
   return new;
 end $$;
 
--- ¿El usuario autenticado es administrador?
-create or replace function is_admin()
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (
-    select 1 from admin_profiles
-    where id = auth.uid() and activo = true
-  );
-$$;
-
 -- ============================================================================
 -- 3. ADMINISTRADORES
 -- Se apoya en auth.users de Supabase. Esta tabla añade rol y estado.
@@ -76,6 +67,17 @@ create table if not exists admin_profiles (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- ¿El usuario autenticado es administrador?
+-- Se define aquí, y no antes, porque consulta la tabla de arriba: PostgreSQL
+-- valida el cuerpo de las funciones SQL en el momento de crearlas.
+create or replace function is_admin()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from admin_profiles
+    where id = auth.uid() and activo = true
+  );
+$$;
 
 -- Al crear un usuario en Auth se le genera su perfil automáticamente.
 create or replace function handle_new_admin()
