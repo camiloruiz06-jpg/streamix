@@ -65,7 +65,6 @@ export const waTemplates = {
 export const metodosPago = [
   { nombre: 'Llaves (Bre-B)', detalle: 'Transferencia inmediata entre bancos', icono: '🔑', destacado: true },
   { nombre: 'Nequi', detalle: 'Transferencia inmediata', icono: '📲' },
-  { nombre: 'Daviplata', detalle: 'Transferencia inmediata', icono: '💜' },
   { nombre: 'Bancolombia', detalle: 'Ahorros / corriente', icono: '🏦' },
   { nombre: 'PayPal', detalle: 'Pagos internacionales', icono: '🌎' },
 ] as const;
@@ -83,7 +82,7 @@ export const pasos = [
   },
   {
     titulo: 'Realiza el pago',
-    texto: 'Llaves (Bre-B), Nequi, Daviplata, Bancolombia o PayPal. Tú eliges el método que prefieras.',
+    texto: 'Llaves (Bre-B), Nequi, Bancolombia o PayPal. Tú eliges el método que prefieras.',
     icono: 'wallet',
   },
   {

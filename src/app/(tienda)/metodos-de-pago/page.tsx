@@ -4,7 +4,7 @@ import { Reveal } from '@/components/ui/Reveal';
 
 export const metadata: Metadata = {
   title: 'Métodos de pago',
-  description: 'Llaves (Bre-B), Nequi, Daviplata, Bancolombia y PayPal.',
+  description: 'Llaves (Bre-B), Nequi, Bancolombia y PayPal.',
 };
 
 export default function MetodosPagoPage() {

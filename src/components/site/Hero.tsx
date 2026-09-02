@@ -70,8 +70,8 @@ export function Hero({ servicios = 8 }: { servicios?: number }) {
             transition={{ duration: 0.8, delay: 0.3, ease }}
             className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <a href="#catalogo" className="btn-primary group w-full sm:w-auto">
-              Ver catálogo
+            <a href="#destacados" className="btn-primary group w-full sm:w-auto">
+              Ver servicios
               <ArrowRight className="h-4 w-4 rotate-90 transition-transform duration-300 group-hover:translate-y-1" />
             </a>
             <a

@@ -30,9 +30,9 @@ export function Footer() {
     <footer className="relative mt-24 border-t border-white/10 bg-ink-950/70">
       <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
 
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-10 pt-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-12 lg:px-8">
         {/* Marca */}
-        <div className="lg:col-span-5">
+        <div className="sm:col-span-2 lg:col-span-5">
           <Link href="/" className="group inline-flex items-center">
             <BrandLockup size={46} />
           </Link>
@@ -67,7 +67,7 @@ export function Footer() {
 
         {/* Links */}
         {columnas.map((col) => (
-          <div key={col.titulo} className="lg:col-span-3">
+          <div key={col.titulo} className="sm:col-span-1 lg:col-span-3">
             <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
               {col.titulo}
             </h3>
@@ -87,16 +87,14 @@ export function Footer() {
           </div>
         ))}
 
-        {/* CTA */}
-        <div className="lg:col-span-1" />
       </div>
 
       <div className="border-t border-white/8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-white/40 sm:flex-row sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 pb-24 pt-6 text-xs text-white/40 sm:flex-row sm:px-6 sm:pb-6 lg:px-8">
           <p>© {new Date().getFullYear()} {site.name}. Todos los derechos reservados.</p>
-          <p className="text-center sm:text-right">
-            {site.name} es un servicio independiente y no está afiliado ni patrocinado por las
-            plataformas mencionadas. Las marcas pertenecen a sus respectivos titulares.
+          <p className="max-w-md text-center sm:text-right">
+            Servicio independiente, no afiliado ni patrocinado por las plataformas mencionadas.
+            Las marcas pertenecen a sus respectivos titulares.
           </p>
         </div>
       </div>

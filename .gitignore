@@ -11,7 +11,6 @@ npm-debug.log*
 .vercel
 next-env.d.ts
 tsconfig.tsbuildinfo
-_to_delete/
 
 # Paquetes de entrega
 *.zip
