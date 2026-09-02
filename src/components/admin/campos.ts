@@ -112,7 +112,7 @@ export function camposCuenta(
     servicios: { value: string; label: string }[];
     planes: { value: string; label: string }[];
     proveedores: { value: string; label: string }[];
-    clientes: { value: string; label: string }[];
+    clientes?: { value: string; label: string }[];
   },
 ): Campo[] {
   return [
@@ -126,10 +126,8 @@ export function camposCuenta(
     { name: 'credencial_usuario', label: 'Correo / usuario de la cuenta', valor: a?.credencial_usuario, placeholder: 'cuenta@correo.com' },
     { name: 'perfil', label: 'Perfil', valor: a?.perfil, placeholder: 'Perfil 1' },
     { name: 'pin', label: 'PIN', valor: a?.pin, placeholder: 'opcional' },
-    { name: 'customer_id', label: 'Cliente asignado', tipo: 'select', opciones: opts.clientes, valor: a?.customer_id, placeholder: '— sin asignar —' },
     { name: 'fecha_adquisicion', label: 'Fecha de compra', tipo: 'fecha', valor: a?.fecha_adquisicion ?? hoyISO() },
-    { name: 'fecha_activacion', label: 'Fecha de activación', tipo: 'fecha', valor: a?.fecha_activacion },
-    { name: 'fecha_vencimiento', label: 'Fecha de vencimiento', tipo: 'fecha', valor: a?.fecha_vencimiento, ayuda: 'De aquí salen las alertas del semáforo' },
+    { name: 'fecha_vencimiento', label: 'Se vence el', tipo: 'fecha', valor: a?.fecha_vencimiento, ayuda: 'Cuándo se te muere esta cuenta con el proveedor' },
     { name: 'info_entrega', label: 'Instrucciones de entrega', tipo: 'textarea', ancho: 'full', valor: a?.info_entrega, placeholder: 'Qué mandarle al cliente por WhatsApp' },
     { name: 'notas', label: 'Notas internas', tipo: 'textarea', ancho: 'full', valor: a?.notas },
   ];

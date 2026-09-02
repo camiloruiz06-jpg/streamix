@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, ArrowLeftRight, Check, Loader2, RefreshCw, X } from 'lucide-react';
@@ -26,7 +27,12 @@ function Modal({ abierto, cerrar, titulo, descripcion, children }: {
     return () => window.removeEventListener('keydown', k);
   }, [abierto, cerrar]);
 
-  return (
+  // Pegado al <body>: si no, el panel con backdrop-blur lo recorta.
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
+  if (!montado) return null;
+
+  return createPortal(
     <AnimatePresence>
       {abierto && (
         <>
@@ -55,7 +61,8 @@ function Modal({ abierto, cerrar, titulo, descripcion, children }: {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
 
