@@ -433,8 +433,8 @@ export function BotonQuitarVencido({ sub }: { sub: SubscriptionRow }) {
         descripcion={`${sub.servicio ?? ''} · venció el ${sub.fecha_fin}`}
       >
         <p className="rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-white/55">
-          Sale de esta lista porque no renovó. <strong className="text-white">La venta y la ganancia
-          se quedan</strong> en Ventas y Finanzas.
+          Sale de esta lista porque no renovó o porque la cuenta ya no está.
+          <strong className="text-white"> La venta y la ganancia se quedan</strong> en Ventas y Finanzas.
         </p>
         <Aviso estado={estado} />
         <div className="mt-6 flex gap-2">

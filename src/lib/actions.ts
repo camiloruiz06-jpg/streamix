@@ -230,14 +230,11 @@ export async function borrarRegistro(
     const hoy = fechaLocalISO();
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('estado, fecha_fin')
+      .select('estado, fecha_fin, account_id')
       .eq('id', id)
       .maybeSingle();
-    if (
-      sub &&
-      ['activa', 'por_vencer'].includes(sub.estado) &&
-      sub.fecha_fin >= hoy
-    ) {
+    const sigueConDias = Boolean(sub && sub.fecha_fin >= hoy && sub.estado !== 'vencida');
+    if (sigueConDias && sub?.account_id) {
       return {
         error:
           'Ese cliente todavía tiene días. Renuévalo o espera a que venza. Quitar el vencimiento no borra la venta ni la ganancia.',
@@ -773,21 +770,24 @@ export async function limpiarSuscripcionesVencidas(
 
   await supabase.rpc('refresh_subscription_statuses');
 
-  const { count } = await supabase
+  const hoy = fechaLocalISO();
+  const { data: filas, error: eSel } = await supabase
     .from('subscriptions')
-    .select('id', { count: 'exact', head: true })
-    .eq('estado', 'vencida');
+    .select('id')
+    .or(`estado.eq.vencida,fecha_fin.lt.${hoy},account_id.is.null`);
+  if (eSel) return { error: eSel.message };
 
-  if (!count) {
+  const ids = (filas ?? []).map((f) => f.id);
+  if (!ids.length) {
     return { ok: true, mensaje: 'No hay vencimientos viejos para quitar.' };
   }
 
-  const { error } = await supabase.from('subscriptions').delete().eq('estado', 'vencida');
+  const { error } = await supabase.from('subscriptions').delete().in('id', ids);
   if (error) return { error: error.message };
 
   refrescar();
   return {
     ok: true,
-    mensaje: `Se quitaron ${count} vencimiento${count === 1 ? '' : 's'} que no se renovaron. Las ventas y la ganancia no se tocaron.`,
+    mensaje: `Se quitaron ${ids.length} vencimiento${ids.length === 1 ? '' : 's'} que no se renovaron (incluye los que quedaron sin cuenta). Las ventas y la ganancia no se tocaron.`,
   };
 }

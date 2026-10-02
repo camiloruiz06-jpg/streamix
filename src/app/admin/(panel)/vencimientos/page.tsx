@@ -8,12 +8,28 @@ import { SemaforoBadge, semaforoMeta } from '@/components/ui/Badge';
 import { getSubscriptions, getAccountSlots, getCustomers } from '@/lib/queries';
 import { formatDateShort } from '@/lib/format';
 import { waRecordatorio } from '@/lib/whatsapp';
-import type { Semaforo } from '@/lib/types';
+import type { Semaforo, SubscriptionRow } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Vencimientos' };
 
 const ordenSemaforo: Semaforo[] = ['vencido', 'hoy', 'critico', 'proximo', 'ok', 'sin_fecha'];
+
+function yaVencio(s: SubscriptionRow): boolean {
+  return s.estado === 'vencida' || (s.dias_restantes !== null && s.dias_restantes < 0);
+}
+
+/** Si la fecha del cliente ya pasó, es vencido aunque le hayas borrado la cuenta. */
+function semaforoLista(s: SubscriptionRow): Semaforo {
+  if (yaVencio(s)) return 'vencido';
+  if (s.semaforo === 'sin_cuenta') return 'sin_fecha';
+  return s.semaforo === 'sin_fecha' ? 'sin_fecha' : s.semaforo;
+}
+
+/** Venció, o se quedó sin cuenta porque borramos el inventario. */
+function sePuedeQuitar(s: SubscriptionRow): boolean {
+  return yaVencio(s) || !s.account_id;
+}
 
 /** 'por_vencer' se lee horrible; esto lo pasa a español de verdad. */
 const estadoCuenta: Record<string, string> = {
@@ -35,24 +51,30 @@ export default async function VencimientosPage() {
 
   const resumen = ordenSemaforo.map((s) => ({
     semaforo: s,
-    total: subs.filter((f) => f.semaforo === s).length,
+    total: subs.filter((f) => semaforoLista(f) === s).length,
   }));
 
-  // Lo urgente de verdad: la cuenta se muere antes que el derecho del cliente
-  const porReemplazar = subs.filter((s) => s.necesita_reemplazo && s.estado !== 'vencida');
-  // Cuántos están sobre una cuenta que marcaste como mala
-  const enCuentaMala = porReemplazar.filter(
-    (s) => s.cuenta_estado && s.cuenta_estado !== 'activa' && s.cuenta_estado !== 'disponible',
-  ).length;
+  // Todavía le quedan días y no tiene cuenta buena (los vencidos se limpian, no se reemplazan)
+  const porReemplazar = subs.filter((s) => {
+    if (yaVencio(s)) return false;
+    if (s.necesita_reemplazo) return true;
+    return !s.account_id;
+  });
 
-  const rows: TableRow[] = subs.map((f) => ({
+  const rows: TableRow[] = subs.map((f) => {
+    const semaforo = semaforoLista(f);
+    const sinCuenta = !f.account_id;
+    const alerta = (f.necesita_reemplazo || sinCuenta) && !yaVencio(f);
+    return {
     id: f.subscription_id,
     tags: {
-      semaforo: f.semaforo,
+      semaforo,
       servicio: f.servicio ?? '—',
-      alerta: f.necesita_reemplazo ? 'si' : 'no',
+      alerta: alerta ? 'si' : 'no',
       cuenta:
-        f.cuenta_estado && !['activa', 'disponible'].includes(f.cuenta_estado) ? 'mala' : 'buena',
+        sinCuenta || (f.cuenta_estado && !['activa', 'disponible'].includes(f.cuenta_estado))
+          ? 'mala'
+          : 'buena',
     },
     search: [f.cliente, f.servicio, f.plan, f.proveedor, f.cliente_whatsapp, f.credencial_usuario]
       .filter(Boolean)
@@ -65,11 +87,11 @@ export default async function VencimientosPage() {
       '',
     ],
     className:
-      f.semaforo === 'vencido' || f.semaforo === 'hoy'
+      semaforo === 'vencido' || semaforo === 'hoy'
         ? 'bg-rose-500/[0.05]'
-        : f.necesita_reemplazo
+        : alerta
           ? 'bg-amber-500/[0.05]'
-          : f.semaforo === 'critico'
+          : semaforo === 'critico'
             ? 'bg-amber-500/[0.04]'
             : undefined,
     cells: [
@@ -82,7 +104,7 @@ export default async function VencimientosPage() {
         <p className="truncate text-xs text-white/35">{f.plan}</p>
       </div>,
       <div key="d">
-        <SemaforoBadge semaforo={f.semaforo === 'sin_cuenta' ? 'sin_fecha' : f.semaforo} />
+        <SemaforoBadge semaforo={semaforo} />
         <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-white/40">
           {formatDateShort(f.fecha_fin)}
           {f.dias_restantes !== null &&
@@ -91,12 +113,14 @@ export default async function VencimientosPage() {
       </div>,
       <div key="ct" className="min-w-0">
         <p className="truncate text-xs text-white/55">{f.credencial_usuario ?? '— sin cuenta —'}</p>
-        {f.necesita_reemplazo ? (
+        {sinCuenta || f.necesita_reemplazo ? (
           <span className="mt-0.5 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
             <AlertTriangle className="h-2.5 w-2.5" />
-            {f.cuenta_estado && !['activa', 'disponible'].includes(f.cuenta_estado)
-              ? `cuenta ${estadoCuenta[f.cuenta_estado] ?? f.cuenta_estado}`
-              : 'se vence antes'}
+            {sinCuenta
+              ? 'sin cuenta'
+              : f.cuenta_estado && !['activa', 'disponible'].includes(f.cuenta_estado)
+                ? `cuenta ${estadoCuenta[f.cuenta_estado] ?? f.cuenta_estado}`
+                : 'se vence antes'}
           </span>
         ) : (
           <p className="truncate text-xs text-white/30">
@@ -108,9 +132,9 @@ export default async function VencimientosPage() {
       <Money key="v" value={f.precio} />,
       <div key="ac" className="flex justify-end gap-1.5">
         <BotonRenovar sub={f} cuentas={cuentas} />
-        <BotonCambiarCuenta sub={f} cuentas={cuentas} resaltado={f.necesita_reemplazo} compacto />
+        <BotonCambiarCuenta sub={f} cuentas={cuentas} resaltado={alerta} compacto />
         <BotonCambiarCliente sub={f} clientes={clientes} />
-        {f.semaforo === 'vencido' && <BotonQuitarVencido sub={f} />}
+        {sePuedeQuitar(f) && <BotonQuitarVencido sub={f} />}
         {f.cliente_whatsapp && (
           <a
             href={waRecordatorio(
@@ -129,10 +153,11 @@ export default async function VencimientosPage() {
         )}
       </div>,
     ],
-  }));
+  };
+  });
 
   const nombresServicios = [...new Set(subs.map((s) => s.servicio).filter(Boolean))] as string[];
-  const vencidosSinRenovar = subs.filter((s) => s.semaforo === 'vencido').length;
+  const vencidosSinRenovar = subs.filter(sePuedeQuitar).length;
 
   return (
     <div>
@@ -250,7 +275,7 @@ export default async function VencimientosPage() {
               key: 'cuenta',
               label: 'Cuenta',
               options: [
-                { value: 'mala', label: 'Vencida o suspendida' },
+                { value: 'mala', label: 'Sin cuenta, vencida o suspendida' },
                 { value: 'buena', label: 'En buen estado' },
               ],
             },
