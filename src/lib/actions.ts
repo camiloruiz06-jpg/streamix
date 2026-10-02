@@ -14,6 +14,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient, supabaseConfigured } from '@/lib/supabase/server';
+import { fechaLocalISO, sumarDiasISO } from '@/lib/format';
 
 /** Tablas que el panel puede modificar, y qué columnas de cada una. */
 const TABLAS = {
@@ -195,6 +196,55 @@ export async function borrarRegistro(
   const { data: sesion } = await supabase.auth.getUser();
   if (!sesion.user) return { error: 'Tu sesión expiró. Vuelve a entrar.' };
 
+  // La ganancia vive en VENTAS. Borrar cuentas, suscripciones o clientes
+  // no debe tocar esas filas: en la base quedan con la referencia en null.
+  if (tabla === 'accounts') {
+    const { count } = await supabase
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('account_id', id)
+      .in('estado', ['activa', 'por_vencer']);
+    if ((count ?? 0) > 0) {
+      return {
+        error:
+          'Esa cuenta todavía tiene clientes con días activos. Pásalos a otra cuenta en Vencimientos y después sí bórrala. Las ventas y la ganancia no se tocan.',
+      };
+    }
+  }
+
+  if (tabla === 'customers') {
+    const { count } = await supabase
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('customer_id', id)
+      .in('estado', ['activa', 'por_vencer']);
+    if ((count ?? 0) > 0) {
+      return {
+        error:
+          'Ese cliente todavía tiene servicios activos. Cuando se le venzan (o los quites en Vencimientos) sí lo puedes borrar. Las ventas se conservan.',
+      };
+    }
+  }
+
+  if (tabla === 'subscriptions') {
+    const hoy = fechaLocalISO();
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('estado, fecha_fin')
+      .eq('id', id)
+      .maybeSingle();
+    if (
+      sub &&
+      ['activa', 'por_vencer'].includes(sub.estado) &&
+      sub.fecha_fin >= hoy
+    ) {
+      return {
+        error:
+          'Ese cliente todavía tiene días. Renuévalo o espera a que venza. Quitar el vencimiento no borra la venta ni la ganancia.',
+      };
+    }
+  }
+
   const { error } = await supabase.from(tabla).delete().eq('id', id);
 
   if (error) {
@@ -209,7 +259,13 @@ export async function borrarRegistro(
   }
 
   refrescar();
-  return { ok: true, mensaje: `Se eliminó el ${TABLAS[tabla].etiqueta}.` };
+  const extra =
+    tabla === 'accounts' || tabla === 'subscriptions' || tabla === 'customers'
+      ? ' Las ventas y la ganancia se quedaron en Ventas y Finanzas.'
+      : tabla === 'sales'
+        ? ' Esa venta ya no suma en ingresos ni en ganancia.'
+        : '';
+  return { ok: true, mensaje: `Se eliminó el ${TABLAS[tabla].etiqueta}.${extra}` };
 }
 
 /* ------------------------------------------- acciones rápidas de negocio */
@@ -272,12 +328,10 @@ export async function venderCuenta(
     const dias =
       (cuenta as unknown as { service_plans?: { duracion_dias?: number } }).service_plans
         ?.duracion_dias ?? 30;
-    const d = new Date();
-    d.setDate(d.getDate() + dias);
-    vence = d.toISOString().slice(0, 10);
+    vence = sumarDias(dias);
   }
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = fechaLocalISO();
 
   const { error: e2 } = await supabase
     .from('accounts')
@@ -329,11 +383,7 @@ const txt = (v: FormDataEntryValue | null) => {
   const t = typeof v === 'string' ? v.trim() : '';
   return t === '' ? null : t;
 };
-const sumarDias = (dias: number, desde?: string | null) => {
-  const d = desde ? new Date(`${desde}T00:00:00`) : new Date();
-  d.setDate(d.getDate() + dias);
-  return d.toISOString().slice(0, 10);
-};
+const sumarDias = (dias: number, desde?: string | null) => sumarDiasISO(dias, desde);
 
 export async function registrarVenta(
   _estado: EstadoAccion,
@@ -389,7 +439,7 @@ export async function registrarVenta(
         credencial_secreto: txt(form.get('credencial_secreto')),
         perfil,
         pin: txt(form.get('pin')),
-        fecha_adquisicion: new Date().toISOString().slice(0, 10),
+        fecha_adquisicion: fechaLocalISO(),
         fecha_vencimiento: venceCuenta,
         costo_adquisicion: costo,
         plazas_totales: plazas,
@@ -440,7 +490,7 @@ export async function registrarVenta(
       account_id: accountId,
       perfil,
       pin: txt(form.get('pin')),
-      fecha_inicio: new Date().toISOString().slice(0, 10),
+      fecha_inicio: fechaLocalISO(),
       fecha_fin: sumarDias(dias),
       precio,
       estado: 'activa',
@@ -642,5 +692,102 @@ export async function reasignarCliente(
   return {
     ok: true,
     mensaje: aviso ?? 'Listo, ese servicio quedó a nombre del cliente correcto.',
+  };
+}
+
+async function exigirAdmin() {
+  if (!supabaseConfigured()) {
+    return { error: 'La base de datos no está conectada.' as const, supabase: null };
+  }
+  const supabase = await createClient();
+  const { data: sesion } = await supabase.auth.getUser();
+  if (!sesion.user) {
+    return { error: 'Tu sesión expiró. Vuelve a entrar.' as const, supabase: null };
+  }
+  return { error: null, supabase };
+}
+
+/**
+ * Borra del inventario las cuentas canceladas o vencidas que ya no tienen
+ * clientes con días activos. Las ventas y la ganancia NO se tocan: viven
+ * en la tabla de ventas, independientes de si la cuenta sigue existiendo.
+ */
+export async function limpiarCuentasMuertas(
+  _estado: EstadoAccion = {},
+  _form?: FormData,
+): Promise<EstadoAccion> {
+  const auth = await exigirAdmin();
+  if (auth.error || !auth.supabase) return { error: auth.error ?? 'Sin sesión.' };
+  const supabase = auth.supabase;
+
+  const { data: cuentas, error } = await supabase
+    .from('accounts')
+    .select('id')
+    .in('estado', ['cancelada', 'vencida']);
+  if (error) return { error: error.message };
+  if (!cuentas?.length) {
+    return { ok: true, mensaje: 'No hay cuentas canceladas o vencidas para limpiar.' };
+  }
+
+  const ids = cuentas.map((c) => c.id);
+  const { data: vivas } = await supabase
+    .from('subscriptions')
+    .select('account_id')
+    .in('account_id', ids)
+    .in('estado', ['activa', 'por_vencer']);
+
+  const ocupadas = new Set((vivas ?? []).map((s) => s.account_id).filter(Boolean));
+  const borribles = ids.filter((id) => !ocupadas.has(id));
+
+  if (!borribles.length) {
+    return {
+      error:
+        'Hay cuentas vencidas o canceladas, pero todavía tienen clientes con días activos. Pásalos a otra cuenta en Vencimientos y vuelve a intentar.',
+    };
+  }
+
+  const { error: eDel } = await supabase.from('accounts').delete().in('id', borribles);
+  if (eDel) return { error: eDel.message };
+
+  refrescar();
+  const skipped = ids.length - borribles.length;
+  return {
+    ok: true,
+    mensaje: skipped
+      ? `Se eliminaron ${borribles.length} cuentas. ${skipped} se dejaron porque todavía tienen clientes con días. Las ventas y la ganancia no se tocaron.`
+      : `Se eliminaron ${borribles.length} cuentas vencidas o canceladas. Las ventas y la ganancia no se tocaron.`,
+  };
+}
+
+/**
+ * Quita de Vencimientos a los clientes que ya se les venció el servicio y
+ * no renovaron. La venta histórica se queda; solo limpia la lista.
+ */
+export async function limpiarSuscripcionesVencidas(
+  _estado: EstadoAccion = {},
+  _form?: FormData,
+): Promise<EstadoAccion> {
+  const auth = await exigirAdmin();
+  if (auth.error || !auth.supabase) return { error: auth.error ?? 'Sin sesión.' };
+  const supabase = auth.supabase;
+
+  await supabase.rpc('refresh_subscription_statuses');
+
+  const { count } = await supabase
+    .from('subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('estado', 'vencida');
+
+  if (!count) {
+    return { ok: true, mensaje: 'No hay vencimientos viejos para quitar.' };
+  }
+
+  const { error } = await supabase.from('subscriptions').delete().eq('estado', 'vencida');
+  if (error) return { error: error.message };
+
+  refrescar();
+  return {
+    ok: true,
+    mensaje: `Se quitaron ${count} vencimiento${count === 1 ? '' : 's'} que no se renovaron. Las ventas y la ganancia no se tocaron.`,
   };
 }

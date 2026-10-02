@@ -21,6 +21,44 @@ export function formatNumber(value: number | null | undefined, decimals = 0): st
   }).format(value);
 }
 
+/** YYYY-MM-DD en hora de Colombia, no en UTC del servidor. */
+export function fechaLocalISO(fecha?: Date | string | null): string {
+  const d = !fecha
+    ? new Date()
+    : typeof fecha === 'string'
+      ? new Date(`${fecha}T12:00:00-05:00`)
+      : fecha;
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+}
+
+/** Suma días a una fecha (o a hoy) y devuelve YYYY-MM-DD en hora de Colombia. */
+export function sumarDiasISO(dias: number, desde?: string | null): string {
+  const base = desde ?? fechaLocalISO();
+  const [y, m, d] = base.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, (m ?? 1) - 1, (d ?? 1) + dias));
+  const yyyy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** ¿Este cliente coincide con lo que se está buscando? */
+export function coincideCliente(
+  c: { nombre?: string | null; usuario?: string | null; whatsapp?: string | null },
+  q: string,
+): boolean {
+  const t = q.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (!t) return true;
+  const nombre = (c.nombre ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const usuario = (c.usuario ?? '').replace(/^@/, '').toLowerCase();
+  const wa = (c.whatsapp ?? '').replace(/[^0-9]/g, '');
+  const digitos = t.replace(/[^0-9]/g, '');
+  if (nombre.includes(t)) return true;
+  if (usuario.includes(t.replace(/^@/, ''))) return true;
+  if (digitos.length >= 3 && wa.includes(digitos)) return true;
+  return false;
+}
+
 /** 12 de marzo de 2026 */
 export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return '—';

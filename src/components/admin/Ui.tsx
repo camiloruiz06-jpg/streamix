@@ -20,7 +20,7 @@ export function PageHeader({
         </h1>
         {descripcion && <p className="mt-1.5 text-sm text-white/45">{descripcion}</p>}
       </div>
-      {children && <div className="flex shrink-0 gap-2">{children}</div>}
+      {children && <div className="flex shrink-0 flex-wrap gap-2">{children}</div>}
     </div>
   );
 }

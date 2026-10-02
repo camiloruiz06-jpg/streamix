@@ -77,6 +77,7 @@ export default async function ClientesPage() {
           botonClase="btn-ghost btn-sm"
           botonIcono={<Pencil className="h-3.5 w-3.5" />}
           permiteBorrar
+          avisoBorrar="Se borran sus servicios pendientes. Las ventas y la ganancia se quedan, pero sin el nombre de esta persona."
         />
         {c.whatsapp ? (
           <a
@@ -122,7 +123,7 @@ export default async function ClientesPage() {
         <StatCard label="Clientes totales" value={formatNumber(clientes.length)} hint={`${clientes.filter((c) => c.estado === 'activo').length} activos`} icon={Users} tono="brand" />
         <StatCard label="Clientes recurrentes" value={formatNumber(recurrentes)} hint="Con más de una compra" icon={Repeat} tono="green" />
         <StatCard label="Ingresos generados" value={formatMoney(ingresoTotal)} hint="Histórico de todos los clientes" icon={UserCheck} tono="blue" />
-        <StatCard label="Mejor cliente" value={mejor?.nombre ?? '—'} hint={mejor ? formatMoney(mejor.total) : 'Sin datos'} icon={Crown} tono="amber" />
+        <StatCard label="Mejor cliente" value={mejor ? etiquetaCliente(mejor) : '—'} hint={mejor ? formatMoney(mejor.total) : 'Sin datos'} icon={Crown} tono="amber" />
       </div>
 
       <Panel>

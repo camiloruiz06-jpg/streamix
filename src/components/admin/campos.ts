@@ -5,7 +5,7 @@
  */
 
 import type { Campo } from '@/components/admin/RecordForm';
-import { etiquetaCliente, contactoCliente } from '@/lib/format';
+import { etiquetaCliente, contactoCliente, fechaLocalISO } from '@/lib/format';
 import type { Customer, Provider, Service, ServicePlan, Account, Category } from '@/lib/types';
 
 export const ESTADOS_CLIENTE = [
@@ -50,7 +50,7 @@ export const METODOS_PAGO = [
   { value: 'otro', label: 'Otro' },
 ];
 
-export const hoyISO = () => new Date().toISOString().slice(0, 10);
+export const hoyISO = () => fechaLocalISO();
 
 /* ------------------------------------------------------------- opciones */
 

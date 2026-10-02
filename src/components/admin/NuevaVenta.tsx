@@ -8,9 +8,10 @@ import {
   Sparkles, TrendingDown, UserPlus, Users, Wallet,
 } from 'lucide-react';
 import { registrarVenta, type EstadoAccion } from '@/lib/actions';
-import { formatMoney, etiquetaCliente, contactoCliente } from '@/lib/format';
+import { formatMoney, etiquetaCliente, sumarDiasISO } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { AccountSlotRow, Customer, ProviderOptionRow, Service } from '@/lib/types';
+import { BuscadorCliente } from '@/components/admin/BuscadorCliente';
 
 const vacio: EstadoAccion = {};
 
@@ -19,11 +20,7 @@ const METODOS = [
   ['paypal', 'PayPal'], ['transferencia', 'Transferencia'], ['efectivo', 'Efectivo'], ['otro', 'Otro'],
 ] as const;
 
-const hoyMas = (d: number) => {
-  const x = new Date();
-  x.setDate(x.getDate() + d);
-  return x.toISOString().slice(0, 10);
-};
+const hoyMas = (d: number) => sumarDiasISO(d);
 
 function Seccion({ n, titulo, hint, children }: {
   n: number; titulo: string; hint?: string; children: React.ReactNode;
@@ -180,19 +177,15 @@ export function NuevaVenta({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="label" htmlFor="v-cliente">Cliente <span className="text-brand-400">*</span></label>
-              <select
-                id="v-cliente" name="customer_id" required className="field cursor-pointer"
-                value={customerId} onChange={(e) => setCustomerId(e.target.value)}
-              >
-                <option value="" className="bg-ink-900">— elegir cliente —</option>
-                <option value="nuevo" className="bg-ink-900">➕ Cliente nuevo (lo creo aquí)</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id} className="bg-ink-900">
-                    {etiquetaCliente(c)}
-                    {contactoCliente(c) ? ` · ${contactoCliente(c)}` : ''}
-                  </option>
-                ))}
-              </select>
+              <BuscadorCliente
+                clientes={clientes}
+                value={customerId}
+                onChange={setCustomerId}
+                permiteNuevo
+              />
+              <p className="mt-1.5 text-xs text-white/35">
+                Escribe un pedazo del nombre, el número o el @usuario. Si no está, elige Cliente nuevo.
+              </p>
             </div>
 
             {customerId === 'nuevo' && (

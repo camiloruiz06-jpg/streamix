@@ -5,6 +5,7 @@ import {
   camposCuenta, opcionesClientes, opcionesProveedores, opcionesServicios, opcionesPlanes,
 } from '@/components/admin/campos';
 import { PageHeader, Panel, StatCard, Avatar } from '@/components/admin/Ui';
+import { BotonLimpiarCuentasMuertas } from '@/components/admin/QuickAction';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { AccountBadge } from '@/components/ui/Badge';
 import {
@@ -40,8 +41,15 @@ export default async function CuentasPage() {
 
   const totalPlazas = plazas.reduce((a, p) => a + p.plazas_totales, 0);
   const libres = plazas.reduce((a, p) => a + Math.max(0, p.plazas_libres), 0);
-  const invertido = cuentas.reduce((a, c) => a + c.costo_adquisicion, 0);
+  const invertido = cuentas
+    .filter((c) => !['cancelada', 'vencida'].includes(c.estado))
+    .reduce((a, c) => a + c.costo_adquisicion, 0);
   const vencidas = plazas.filter((p) => (p.dias_cuenta ?? 99) < 0).length;
+  const muertas = cuentas.filter((c) => {
+    if (!['cancelada', 'vencida'].includes(c.estado)) return false;
+    const quien = ocupantes.get(c.id) ?? [];
+    return quien.length === 0;
+  }).length;
 
   const nombresServicios = [...new Set(cuentas.map((c) => c.services?.nombre).filter(Boolean))] as string[];
 
@@ -142,6 +150,7 @@ export default async function CuentasPage() {
             botonClase="btn-ghost btn-sm"
             botonIcono={<Pencil className="h-3.5 w-3.5" />}
             permiteBorrar
+            avisoBorrar="La cuenta sale del inventario. Las ventas y la ganancia se quedan en Ventas y Finanzas: no se pierde lo que ya ganaste."
           />
         </div>,
       ],
@@ -165,13 +174,14 @@ export default async function CuentasPage() {
           botonLabel="Nueva cuenta"
           botonIcono={<Plus className="h-3.5 w-3.5" />}
         />
+        <BotonLimpiarCuentasMuertas cuantas={muertas} />
       </PageHeader>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Plazas libres" value={formatNumber(libres)} hint={`de ${formatNumber(totalPlazas)} en total`} icon={PackageCheck} tono={libres ? 'green' : 'amber'} />
         <StatCard label="Plazas ocupadas" value={formatNumber(totalPlazas - libres)} hint="Clientes conectados ahora" icon={Users} tono="brand" />
         <StatCard label="Cuentas vencidas" value={formatNumber(vencidas)} hint="Hay que reponerlas" icon={AlertTriangle} tono={vencidas ? 'red' : 'blue'} />
-        <StatCard label="Invertido" value={formatMoney(invertido)} hint="Costo total del inventario" icon={KeyRound} tono="amber" />
+        <StatCard label="Invertido" value={formatMoney(invertido)} hint="Inventario vigente, sin vencidas ni canceladas" icon={KeyRound} tono="amber" />
       </div>
 
       <Panel>
@@ -216,8 +226,9 @@ export default async function CuentasPage() {
         y los huecos son plazas libres. El <strong className="text-white/60">costo</strong> es lo que
         pagaste de verdad por la cuenta, y se descuenta una sola vez, en la primera venta: si te costó
         $4.000 y la vendes en $7.000, ganas $3.000; las plazas que vendas después ya no te cuestan nada.
-        El «ref. por plaza» es solo una referencia para ponerle precio. Evita guardar contraseñas en
-        texto plano; mándalas por WhatsApp.
+        El «ref. por plaza» es solo una referencia para ponerle precio. Cuando una cuenta se vence o la
+        cancelas, puedes borrarla: <strong className="text-white/60">la ganancia vive en Ventas</strong>,
+        no en la cuenta, así que no se pierde. Evita guardar contraseñas en texto plano; mándalas por WhatsApp.
       </p>
     </div>
   );

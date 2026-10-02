@@ -99,6 +99,7 @@ export default async function VentasPage() {
           botonClase="btn-ghost btn-sm"
           botonIcono={<Pencil className="h-3.5 w-3.5" />}
           permiteBorrar
+          avisoBorrar="Esto SÍ quita esa venta de ingresos y ganancia. Si solo quieres limpiar inventario, borra la cuenta, no la venta."
         />
       </div>,
     ],

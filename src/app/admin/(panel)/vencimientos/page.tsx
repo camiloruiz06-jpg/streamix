@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { MessageCircle, AlertTriangle, Plus } from 'lucide-react';
 import { PageHeader, Panel, Money } from '@/components/admin/Ui';
-import { BotonActualizarVencimientos } from '@/components/admin/QuickAction';
-import { BotonRenovar, BotonCambiarCuenta, BotonCambiarCliente } from '@/components/admin/SubAcciones';
+import { BotonRenovar, BotonCambiarCuenta, BotonCambiarCliente, BotonQuitarVencido } from '@/components/admin/SubAcciones';
+import { BotonActualizarVencimientos, BotonLimpiarVencimientos } from '@/components/admin/QuickAction';
 import { DataTable, type TableRow } from '@/components/admin/DataTable';
 import { SemaforoBadge, semaforoMeta } from '@/components/ui/Badge';
 import { getSubscriptions, getAccountSlots, getCustomers } from '@/lib/queries';
@@ -110,6 +110,7 @@ export default async function VencimientosPage() {
         <BotonRenovar sub={f} cuentas={cuentas} />
         <BotonCambiarCuenta sub={f} cuentas={cuentas} resaltado={f.necesita_reemplazo} compacto />
         <BotonCambiarCliente sub={f} clientes={clientes} />
+        {f.semaforo === 'vencido' && <BotonQuitarVencido sub={f} />}
         {f.cliente_whatsapp && (
           <a
             href={waRecordatorio(
@@ -131,14 +132,16 @@ export default async function VencimientosPage() {
   }));
 
   const nombresServicios = [...new Set(subs.map((s) => s.servicio).filter(Boolean))] as string[];
+  const vencidosSinRenovar = subs.filter((s) => s.semaforo === 'vencido').length;
 
   return (
     <div>
       <PageHeader
         titulo="Vencimientos"
-        descripcion="Los días que le debes a cada cliente. Renueva sumando días, o pásalo a otra cuenta sin que pierda ninguno."
+        descripcion="Los días que le debes a cada cliente. Renueva sumando días, o pásalo a otra cuenta sin que pierda ninguno. Los que ya vencieron y no renovaron se pueden quitar: la ganancia se queda en Ventas."
       >
         <BotonActualizarVencimientos />
+        <BotonLimpiarVencimientos cuantos={vencidosSinRenovar} />
         <Link href="/admin/vender" className="btn-primary btn-sm">
           <Plus className="h-3.5 w-3.5" /> Nueva venta
         </Link>

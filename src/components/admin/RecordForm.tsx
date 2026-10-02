@@ -129,6 +129,7 @@ export function RecordForm({
   botonIcono,
   accion = 'guardar',
   permiteBorrar = false,
+  avisoBorrar,
 }: {
   tabla: string;
   id?: string;
@@ -141,6 +142,8 @@ export function RecordForm({
   /** 'guardar' usa la tabla; 'vender' entrega la cuenta y registra la venta */
   accion?: 'guardar' | 'vender';
   permiteBorrar?: boolean;
+  /** Texto que aparece al confirmar el borrado. */
+  avisoBorrar?: string;
 }) {
   const [abierto, setAbierto] = useState(false);
   const router = useRouter();
@@ -257,7 +260,9 @@ export function RecordForm({
                   <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
                     {permiteBorrar && id ? (
                       confirmarBorrado ? (
-                        <span className="flex items-center gap-2 text-xs text-white/60">
+                        <span className="flex max-w-sm flex-col gap-2 text-xs text-white/60">
+                          {avisoBorrar && <span className="leading-relaxed text-white/50">{avisoBorrar}</span>}
+                          <span className="flex items-center gap-2">
                           ¿Seguro?
                           <button
                             type="button"
@@ -279,6 +284,7 @@ export function RecordForm({
                           >
                             Cancelar
                           </button>
+                        </span>
                         </span>
                       ) : (
                         <button

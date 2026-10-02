@@ -4,11 +4,12 @@ import { useActionState, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, ArrowLeftRight, Check, Loader2, RefreshCw, UserCog, X } from 'lucide-react';
-import { renovarSuscripcion, moverSuscripcion, reasignarCliente, type EstadoAccion } from '@/lib/actions';
-import { formatMoney, etiquetaCliente, contactoCliente } from '@/lib/format';
+import { AlertCircle, ArrowLeftRight, Check, Loader2, RefreshCw, Trash2, UserCog, X } from 'lucide-react';
+import { renovarSuscripcion, moverSuscripcion, reasignarCliente, borrarRegistro, type EstadoAccion } from '@/lib/actions';
+import { formatMoney } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { AccountSlotRow, Customer, SubscriptionRow } from '@/lib/types';
+import { BuscadorCliente } from '@/components/admin/BuscadorCliente';
 
 const vacio: EstadoAccion = {};
 
@@ -349,20 +350,12 @@ export function BotonCambiarCliente({
 
           <div>
             <label className="label" htmlFor={`rc-cli-${sub.subscription_id}`}>Pasarlo a</label>
-            <select
-              id={`rc-cli-${sub.subscription_id}`} name="customer_id"
-              className="field cursor-pointer" value={destino}
-              onChange={(e) => setDestino(e.target.value)}
-            >
-              <option value="" className="bg-ink-900">— elegir cliente —</option>
-              <option value="nuevo" className="bg-ink-900">➕ Cliente nuevo</option>
-              {otros.map((c) => (
-                <option key={c.id} value={c.id} className="bg-ink-900">
-                  {etiquetaCliente(c)}
-                  {contactoCliente(c) ? ` · ${contactoCliente(c)}` : ''}
-                </option>
-              ))}
-            </select>
+            <BuscadorCliente
+              clientes={otros}
+              value={destino}
+              onChange={setDestino}
+              permiteNuevo
+            />
           </div>
 
           {destino === 'nuevo' && (
@@ -400,6 +393,68 @@ export function BotonCambiarCliente({
             </button>
           </div>
         </form>
+      </Modal>
+    </>
+  );
+}
+
+/* ------------------------------------------- quitar vencido sin renovar --- */
+
+/**
+ * Saca de la lista a un cliente que ya se le venció y no renovó.
+ * No borra la venta ni la ganancia.
+ */
+export function BotonQuitarVencido({ sub }: { sub: SubscriptionRow }) {
+  const router = useRouter();
+  const [abierto, setAbierto] = useState(false);
+  const [estado, enviar, pendiente] = useActionState(borrarRegistro, vacio);
+
+  useEffect(() => {
+    if (!estado.ok) return;
+    const t = setTimeout(() => { setAbierto(false); router.refresh(); }, 700);
+    return () => clearTimeout(t);
+  }, [estado.ok, router]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        title="Quitar de vencimientos (no borra la ganancia)"
+        className="btn-ghost btn-sm !px-2 text-rose-300/80 hover:text-rose-200"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+
+      <Modal
+        abierto={abierto}
+        cerrar={() => setAbierto(false)}
+        titulo={`Quitar a ${sub.cliente ?? 'este cliente'}`}
+        descripcion={`${sub.servicio ?? ''} · venció el ${sub.fecha_fin}`}
+      >
+        <p className="rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-white/55">
+          Sale de esta lista porque no renovó. <strong className="text-white">La venta y la ganancia
+          se quedan</strong> en Ventas y Finanzas.
+        </p>
+        <Aviso estado={estado} />
+        <div className="mt-6 flex gap-2">
+          <button type="button" onClick={() => setAbierto(false)} className="btn-ghost btn-sm flex-1 sm:flex-none">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={pendiente}
+            onClick={() => {
+              const fd = new FormData();
+              fd.set('__tabla', 'subscriptions');
+              fd.set('__id', sub.subscription_id);
+              enviar(fd);
+            }}
+            className="btn-sm flex-1 justify-center border border-rose-400/40 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25"
+          >
+            {pendiente ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Quitando…</> : 'Sí, quitar'}
+          </button>
+        </div>
       </Modal>
     </>
   );
